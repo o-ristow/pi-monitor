@@ -1,0 +1,1996 @@
+{
+  "uid": "t640-hardware",
+  "title": "T640 Hardware",
+  "description": "Author: Oliver Ristow. SNMP hardware history and optional existing Redfish PCIe health. Built for the measurements verified on this T640.",
+  "tags": [
+    "home",
+    "idrac",
+    "T640"
+  ],
+  "schemaVersion": 39,
+  "version": 2,
+  "editable": false,
+  "refresh": "1m",
+  "timezone": "browser",
+  "time": {
+    "from": "now-6h",
+    "to": "now"
+  },
+  "timepicker": {
+    "refresh_intervals": [
+      "30s",
+      "1m",
+      "5m",
+      "15m"
+    ],
+    "time_options": [
+      "1h",
+      "6h",
+      "12h",
+      "24h",
+      "2d",
+      "7d",
+      "30d"
+    ]
+  },
+  "templating": {
+    "list": [
+      {
+        "name": "idrac",
+        "label": "iDRAC address",
+        "type": "textbox",
+        "query": "192.168.10.26",
+        "current": {
+          "text": "192.168.10.26",
+          "value": "192.168.10.26"
+        },
+        "hide": 0,
+        "skipUrlSync": false
+      }
+    ]
+  },
+  "annotations": {
+    "list": []
+  },
+  "panels": [
+    {
+      "id": 1,
+      "title": "System health",
+      "type": "stat",
+      "gridPos": {
+        "x": 0,
+        "y": 0,
+        "w": 4,
+        "h": 5
+      },
+      "description": "Latest sample within five minutes, independent of the selected historical range.",
+      "datasource": {
+        "type": "influxdb",
+        "uid": "influxdb"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "noValue": "NO RECENT DATA",
+          "decimals": 0,
+          "mappings": [
+            {
+              "type": "value",
+              "options": {
+                "1": {
+                  "text": "Other",
+                  "color": "gray",
+                  "index": 0
+                },
+                "2": {
+                  "text": "Unknown",
+                  "color": "gray",
+                  "index": 1
+                },
+                "3": {
+                  "text": "OK",
+                  "color": "green",
+                  "index": 2
+                },
+                "4": {
+                  "text": "Warning",
+                  "color": "orange",
+                  "index": 3
+                },
+                "5": {
+                  "text": "Critical",
+                  "color": "red",
+                  "index": 4
+                },
+                "6": {
+                  "text": "Nonrecoverable",
+                  "color": "dark-red",
+                  "index": 5
+                }
+              }
+            }
+          ]
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "textMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "wideLayout": true
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "query": "from(bucket: \"monitoring\")\n  |> range(start: -5m)\n  |> filter(fn: (r) => r._measurement == \"idrac\" and r._field == \"system_status\" and r.source == \"${idrac:raw}\")\n  |> last()",
+          "datasource": {
+            "type": "influxdb",
+            "uid": "influxdb"
+          }
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "title": "Storage health",
+      "type": "stat",
+      "gridPos": {
+        "x": 4,
+        "y": 0,
+        "w": 4,
+        "h": 5
+      },
+      "description": "Latest sample within five minutes, independent of the selected historical range.",
+      "datasource": {
+        "type": "influxdb",
+        "uid": "influxdb"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "noValue": "NO RECENT DATA",
+          "decimals": 0,
+          "mappings": [
+            {
+              "type": "value",
+              "options": {
+                "1": {
+                  "text": "Other",
+                  "color": "gray",
+                  "index": 0
+                },
+                "2": {
+                  "text": "Unknown",
+                  "color": "gray",
+                  "index": 1
+                },
+                "3": {
+                  "text": "OK",
+                  "color": "green",
+                  "index": 2
+                },
+                "4": {
+                  "text": "Warning",
+                  "color": "orange",
+                  "index": 3
+                },
+                "5": {
+                  "text": "Critical",
+                  "color": "red",
+                  "index": 4
+                },
+                "6": {
+                  "text": "Nonrecoverable",
+                  "color": "dark-red",
+                  "index": 5
+                }
+              }
+            }
+          ]
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "textMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "wideLayout": true
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "query": "from(bucket: \"monitoring\")\n  |> range(start: -5m)\n  |> filter(fn: (r) => r._measurement == \"idrac\" and r._field == \"storage_status\" and r.source == \"${idrac:raw}\")\n  |> last()",
+          "datasource": {
+            "type": "influxdb",
+            "uid": "influxdb"
+          }
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "title": "Server power",
+      "type": "stat",
+      "gridPos": {
+        "x": 8,
+        "y": 0,
+        "w": 4,
+        "h": 5
+      },
+      "description": "Latest sample within five minutes, independent of the selected historical range.",
+      "datasource": {
+        "type": "influxdb",
+        "uid": "influxdb"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "noValue": "NO RECENT DATA",
+          "decimals": 0,
+          "mappings": [
+            {
+              "type": "value",
+              "options": {
+                "1": {
+                  "text": "Other",
+                  "color": "gray",
+                  "index": 0
+                },
+                "2": {
+                  "text": "Unknown",
+                  "color": "gray",
+                  "index": 1
+                },
+                "3": {
+                  "text": "Off",
+                  "color": "blue",
+                  "index": 2
+                },
+                "4": {
+                  "text": "On",
+                  "color": "green",
+                  "index": 3
+                }
+              }
+            }
+          ]
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "textMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "wideLayout": true
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "query": "from(bucket: \"monitoring\")\n  |> range(start: -5m)\n  |> filter(fn: (r) => r._measurement == \"idrac\" and r._field == \"power_state\" and r.source == \"${idrac:raw}\")\n  |> last()",
+          "datasource": {
+            "type": "influxdb",
+            "uid": "influxdb"
+          }
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "title": "Power draw",
+      "type": "stat",
+      "gridPos": {
+        "x": 12,
+        "y": 0,
+        "w": 4,
+        "h": 5
+      },
+      "description": "Latest sample within five minutes, independent of the selected historical range.",
+      "datasource": {
+        "type": "influxdb",
+        "uid": "influxdb"
+      },
+      "fieldConfig": {
+      "defaults": {
+        "noValue": "NO RECENT DATA",
+        "decimals": 0,
+        "unit": "watt",
+        "color": {"mode": "thresholds"},
+        "thresholds": {
+          "mode": "absolute",
+          "steps": [
+            {"color": "green", "value": null},
+            {"color": "orange", "value": 1608},
+            {"color": "red", "value": 1752}
+          ]
+        }
+      },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "textMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "wideLayout": true
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "query": "from(bucket: \"monitoring\")\n  |> range(start: -5m)\n  |> filter(fn: (r) => r._measurement == \"idrac_power\" and r._field == \"reading_raw\" and r.source == \"${idrac:raw}\" and r.sensor == \"System Board Pwr Consumption\")\n  |> last()",
+          "datasource": {
+            "type": "influxdb",
+            "uid": "influxdb"
+          }
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "title": "Inlet temperature",
+      "type": "stat",
+      "gridPos": {
+        "x": 16,
+        "y": 0,
+        "w": 4,
+        "h": 5
+      },
+      "description": "Latest sample within five minutes, independent of the selected historical range.",
+      "datasource": {
+        "type": "influxdb",
+        "uid": "influxdb"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "noValue": "NO RECENT DATA",
+          "decimals": 0,
+          "unit": "celsius"
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "textMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "wideLayout": true
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "query": "from(bucket: \"monitoring\")\n  |> range(start: -5m)\n  |> filter(fn: (r) => r._measurement == \"idrac_temperature\" and r._field == \"temperature_c\" and r.source == \"${idrac:raw}\" and r.sensor == \"System Board Inlet Temp\")\n  |> last()",
+          "datasource": {
+            "type": "influxdb",
+            "uid": "influxdb"
+          }
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "title": "Telemetry age",
+      "type": "stat",
+      "gridPos": {
+        "x": 20,
+        "y": 0,
+        "w": 4,
+        "h": 5
+      },
+      "description": "Age of the most recent overall SNMP health sample, refreshed every minute. Missing samples older than five minutes show NO RECENT DATA.",
+      "datasource": {
+        "type": "influxdb",
+        "uid": "influxdb"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "decimals": 0,
+          "noValue": "NO RECENT DATA",
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "orange",
+                "value": 150
+              },
+              {
+                "color": "red",
+                "value": 240
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "textMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "wideLayout": true
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "query": "from(bucket: \"monitoring\")\n  |> range(start: -5m)\n  |> filter(fn: (r) => r._measurement == \"idrac\" and r._field == \"system_status\" and r.source == \"${idrac:raw}\")\n  |> last()\n  |> map(fn: (r) => ({_time: r._time, _value: float(v: uint(v: now()) - uint(v: r._time)) / 1000000000.0, _field: \"Sample age\"}))",
+          "datasource": {
+            "type": "influxdb",
+            "uid": "influxdb"
+          }
+        }
+      ]
+    },
+    {
+      "id": 7,
+      "title": "System and storage health",
+      "type": "state-timeline",
+      "gridPos": {
+        "x": 0,
+        "y": 5,
+        "w": 16,
+        "h": 6
+      },
+      "description": "Raw status codes with explicit value mappings. Gaps over 150 seconds are disconnected; missing data is not mapped to OK.",
+      "datasource": {
+        "type": "influxdb",
+        "uid": "influxdb"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "mappings": [
+            {
+              "type": "value",
+              "options": {
+                "1": {
+                  "text": "Other",
+                  "color": "gray",
+                  "index": 0
+                },
+                "2": {
+                  "text": "Unknown",
+                  "color": "gray",
+                  "index": 1
+                },
+                "3": {
+                  "text": "OK",
+                  "color": "green",
+                  "index": 2
+                },
+                "4": {
+                  "text": "Warning",
+                  "color": "orange",
+                  "index": 3
+                },
+                "5": {
+                  "text": "Critical",
+                  "color": "red",
+                  "index": 4
+                },
+                "6": {
+                  "text": "Nonrecoverable",
+                  "color": "dark-red",
+                  "index": 5
+                }
+              }
+            }
+          ],
+          "noValue": "No data",
+          "custom": {
+            "lineWidth": 0,
+            "fillOpacity": 90,
+            "spanNulls": false,
+            "insertNulls": 150000
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "showValue": "auto",
+        "mergeValues": true,
+        "alignValue": "left",
+        "rowHeight": 0.8,
+        "legend": {
+          "showLegend": false,
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "query": "from(bucket: \"monitoring\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"idrac\" and r._field == \"system_status\" and r.source == \"${idrac:raw}\")\n  |> aggregateWindow(every: v.windowPeriod, fn: last, createEmpty: false)\n  |> map(fn: (r) => ({_time: r._time, _value: r._value, _field: \"System\"}))\n  |> group(columns: [\"_field\"])",
+          "datasource": {
+            "type": "influxdb",
+            "uid": "influxdb"
+          }
+        },
+        {
+          "refId": "B",
+          "query": "from(bucket: \"monitoring\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"idrac\" and r._field == \"storage_status\" and r.source == \"${idrac:raw}\")\n  |> aggregateWindow(every: v.windowPeriod, fn: last, createEmpty: false)\n  |> map(fn: (r) => ({_time: r._time, _value: r._value, _field: \"Storage\"}))\n  |> group(columns: [\"_field\"])",
+          "datasource": {
+            "type": "influxdb",
+            "uid": "influxdb"
+          }
+        }
+      ]
+    },
+    {
+      "id": 8,
+      "title": "Power state",
+      "type": "state-timeline",
+      "gridPos": {
+        "x": 16,
+        "y": 5,
+        "w": 8,
+        "h": 6
+      },
+      "description": "Raw status codes with explicit value mappings. Gaps over 150 seconds are disconnected; missing data is not mapped to OK.",
+      "datasource": {
+        "type": "influxdb",
+        "uid": "influxdb"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "mappings": [
+            {
+              "type": "value",
+              "options": {
+                "1": {
+                  "text": "Other",
+                  "color": "gray",
+                  "index": 0
+                },
+                "2": {
+                  "text": "Unknown",
+                  "color": "gray",
+                  "index": 1
+                },
+                "3": {
+                  "text": "Off",
+                  "color": "blue",
+                  "index": 2
+                },
+                "4": {
+                  "text": "On",
+                  "color": "green",
+                  "index": 3
+                }
+              }
+            }
+          ],
+          "noValue": "No data",
+          "custom": {
+            "lineWidth": 0,
+            "fillOpacity": 90,
+            "spanNulls": false,
+            "insertNulls": 150000
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "showValue": "auto",
+        "mergeValues": true,
+        "alignValue": "left",
+        "rowHeight": 0.8,
+        "legend": {
+          "showLegend": false,
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "query": "from(bucket: \"monitoring\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"idrac\" and r._field == \"power_state\" and r.source == \"${idrac:raw}\")\n  |> aggregateWindow(every: v.windowPeriod, fn: last, createEmpty: false)\n  |> map(fn: (r) => ({_time: r._time, _value: r._value, _field: \"Server power\"}))\n  |> group(columns: [\"_field\"])",
+          "datasource": {
+            "type": "influxdb",
+            "uid": "influxdb"
+          }
+        }
+      ]
+    },
+    {
+      "id": 9,
+      "title": "Power supplies",
+      "type": "state-timeline",
+      "gridPos": {
+        "x": 0,
+        "y": 11,
+        "w": 24,
+        "h": 6
+      },
+      "description": "Raw status codes with explicit value mappings. Gaps over 150 seconds are disconnected; missing data is not mapped to OK.",
+      "datasource": {
+        "type": "influxdb",
+        "uid": "influxdb"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "mappings": [
+            {
+              "type": "value",
+              "options": {
+                "1": {
+                  "text": "Other",
+                  "color": "gray",
+                  "index": 0
+                },
+                "2": {
+                  "text": "Unknown",
+                  "color": "gray",
+                  "index": 1
+                },
+                "3": {
+                  "text": "OK",
+                  "color": "green",
+                  "index": 2
+                },
+                "4": {
+                  "text": "Warning",
+                  "color": "orange",
+                  "index": 3
+                },
+                "5": {
+                  "text": "Critical",
+                  "color": "red",
+                  "index": 4
+                },
+                "6": {
+                  "text": "Nonrecoverable",
+                  "color": "dark-red",
+                  "index": 5
+                }
+              }
+            }
+          ],
+          "noValue": "No data",
+          "custom": {
+            "lineWidth": 0,
+            "fillOpacity": 90,
+            "spanNulls": false,
+            "insertNulls": 150000
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "showValue": "auto",
+        "mergeValues": true,
+        "alignValue": "left",
+        "rowHeight": 0.8,
+        "legend": {
+          "showLegend": false,
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "query": "from(bucket: \"monitoring\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"idrac_psu\" and r._field == \"status\" and r.source == \"${idrac:raw}\")\n  |> aggregateWindow(every: v.windowPeriod, fn: last, createEmpty: false)\n  |> map(fn: (r) => ({_time: r._time, _value: r._value, _field: r.psu}))\n  |> group(columns: [\"_field\"])",
+          "datasource": {
+            "type": "influxdb",
+            "uid": "influxdb"
+          }
+        }
+      ]
+    },
+    {
+      "id": 10,
+      "title": "Physical disks",
+      "type": "state-timeline",
+      "gridPos": {
+        "x": 0,
+        "y": 17,
+        "w": 24,
+        "h": 11
+      },
+      "description": "One row per discovered disk, including BOSS SSDs: eight currently. Physical disk state 7 means failed; state 3 means online. Device indexes are not hardcoded.",
+      "datasource": {
+        "type": "influxdb",
+        "uid": "influxdb"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "mappings": [
+            {
+              "type": "value",
+              "options": {
+                "1": {
+                  "text": "Unknown",
+                  "color": "gray",
+                  "index": 0
+                },
+                "2": {
+                  "text": "Ready",
+                  "color": "blue",
+                  "index": 1
+                },
+                "3": {
+                  "text": "Online",
+                  "color": "green",
+                  "index": 2
+                },
+                "4": {
+                  "text": "Foreign",
+                  "color": "orange",
+                  "index": 3
+                },
+                "5": {
+                  "text": "Offline",
+                  "color": "red",
+                  "index": 4
+                },
+                "6": {
+                  "text": "Blocked",
+                  "color": "orange",
+                  "index": 5
+                },
+                "7": {
+                  "text": "Failed",
+                  "color": "red",
+                  "index": 6
+                },
+                "8": {
+                  "text": "Non-RAID",
+                  "color": "blue",
+                  "index": 7
+                },
+                "9": {
+                  "text": "Removed",
+                  "color": "red",
+                  "index": 8
+                },
+                "10": {
+                  "text": "Read-only",
+                  "color": "orange",
+                  "index": 9
+                }
+              }
+            }
+          ],
+          "noValue": "No data",
+          "custom": {
+            "lineWidth": 0,
+            "fillOpacity": 90,
+            "spanNulls": false,
+            "insertNulls": 150000
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "showValue": "auto",
+        "mergeValues": true,
+        "alignValue": "left",
+        "rowHeight": 0.8,
+        "legend": {
+          "showLegend": false,
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "query": "from(bucket: \"monitoring\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"idrac_disk\" and r._field == \"state\" and r.source == \"${idrac:raw}\")\n  |> aggregateWindow(every: v.windowPeriod, fn: last, createEmpty: false)\n  |> map(fn: (r) => ({_time: r._time, _value: r._value, _field: r.disk}))\n  |> group(columns: [\"_field\"])",
+          "datasource": {
+            "type": "influxdb",
+            "uid": "influxdb"
+          }
+        }
+      ]
+    },
+    {
+      "id": 11,
+      "title": "RAID virtual disks",
+      "type": "state-timeline",
+      "gridPos": {
+        "x": 0,
+        "y": 28,
+        "w": 24,
+        "h": 6
+      },
+      "description": "Operating state of each virtual disk. This enum differs from component health: state 2 is online, state 4 is degraded.",
+      "datasource": {
+        "type": "influxdb",
+        "uid": "influxdb"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "mappings": [
+            {
+              "type": "value",
+              "options": {
+                "1": {
+                  "text": "Unknown",
+                  "color": "gray",
+                  "index": 0
+                },
+                "2": {
+                  "text": "Online",
+                  "color": "green",
+                  "index": 1
+                },
+                "3": {
+                  "text": "Failed",
+                  "color": "red",
+                  "index": 2
+                },
+                "4": {
+                  "text": "Degraded",
+                  "color": "orange",
+                  "index": 3
+                }
+              }
+            }
+          ],
+          "noValue": "No data",
+          "custom": {
+            "lineWidth": 0,
+            "fillOpacity": 90,
+            "spanNulls": false,
+            "insertNulls": 150000
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "showValue": "auto",
+        "mergeValues": true,
+        "alignValue": "left",
+        "rowHeight": 0.8,
+        "legend": {
+          "showLegend": false,
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "query": "from(bucket: \"monitoring\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"idrac_virtual_disk\" and r._field == \"state\" and r.source == \"${idrac:raw}\")\n  |> aggregateWindow(every: v.windowPeriod, fn: last, createEmpty: false)\n  |> map(fn: (r) => ({_time: r._time, _value: r._value, _field: r.virtual_disk}))\n  |> group(columns: [\"_field\"])",
+          "datasource": {
+            "type": "influxdb",
+            "uid": "influxdb"
+          }
+        }
+      ]
+    },
+    {
+      "id": 12,
+      "title": "Controllers: component health",
+      "type": "state-timeline",
+      "gridPos": {
+        "x": 0,
+        "y": 34,
+        "w": 12,
+        "h": 6
+      },
+      "description": "Controller electronics only, excluding attached component faults.",
+      "datasource": {
+        "type": "influxdb",
+        "uid": "influxdb"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "mappings": [
+            {
+              "type": "value",
+              "options": {
+                "1": {
+                  "text": "Other",
+                  "color": "gray",
+                  "index": 0
+                },
+                "2": {
+                  "text": "Unknown",
+                  "color": "gray",
+                  "index": 1
+                },
+                "3": {
+                  "text": "OK",
+                  "color": "green",
+                  "index": 2
+                },
+                "4": {
+                  "text": "Warning",
+                  "color": "orange",
+                  "index": 3
+                },
+                "5": {
+                  "text": "Critical",
+                  "color": "red",
+                  "index": 4
+                },
+                "6": {
+                  "text": "Nonrecoverable",
+                  "color": "dark-red",
+                  "index": 5
+                }
+              }
+            }
+          ],
+          "noValue": "No data",
+          "custom": {
+            "lineWidth": 0,
+            "fillOpacity": 90,
+            "spanNulls": false,
+            "insertNulls": 150000
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "showValue": "auto",
+        "mergeValues": true,
+        "alignValue": "left",
+        "rowHeight": 0.8,
+        "legend": {
+          "showLegend": false,
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "query": "from(bucket: \"monitoring\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"idrac_controller\" and r._field == \"component_status\" and r.source == \"${idrac:raw}\")\n  |> aggregateWindow(every: v.windowPeriod, fn: last, createEmpty: false)\n  |> map(fn: (r) => ({_time: r._time, _value: r._value, _field: r.controller}))\n  |> group(columns: [\"_field\"])",
+          "datasource": {
+            "type": "influxdb",
+            "uid": "influxdb"
+          }
+        }
+      ]
+    },
+    {
+      "id": 13,
+      "title": "Controllers: combined health",
+      "type": "state-timeline",
+      "gridPos": {
+        "x": 12,
+        "y": 34,
+        "w": 12,
+        "h": 6
+      },
+      "description": "Includes attached components; a healthy PERC can show a warning because its array is degraded.",
+      "datasource": {
+        "type": "influxdb",
+        "uid": "influxdb"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "mappings": [
+            {
+              "type": "value",
+              "options": {
+                "1": {
+                  "text": "Other",
+                  "color": "gray",
+                  "index": 0
+                },
+                "2": {
+                  "text": "Unknown",
+                  "color": "gray",
+                  "index": 1
+                },
+                "3": {
+                  "text": "OK",
+                  "color": "green",
+                  "index": 2
+                },
+                "4": {
+                  "text": "Warning",
+                  "color": "orange",
+                  "index": 3
+                },
+                "5": {
+                  "text": "Critical",
+                  "color": "red",
+                  "index": 4
+                },
+                "6": {
+                  "text": "Nonrecoverable",
+                  "color": "dark-red",
+                  "index": 5
+                }
+              }
+            }
+          ],
+          "noValue": "No data",
+          "custom": {
+            "lineWidth": 0,
+            "fillOpacity": 90,
+            "spanNulls": false,
+            "insertNulls": 150000
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "showValue": "auto",
+        "mergeValues": true,
+        "alignValue": "left",
+        "rowHeight": 0.8,
+        "legend": {
+          "showLegend": false,
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "query": "from(bucket: \"monitoring\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"idrac_controller\" and r._field == \"rollup_status\" and r.source == \"${idrac:raw}\")\n  |> aggregateWindow(every: v.windowPeriod, fn: last, createEmpty: false)\n  |> map(fn: (r) => ({_time: r._time, _value: r._value, _field: r.controller}))\n  |> group(columns: [\"_field\"])",
+          "datasource": {
+            "type": "influxdb",
+            "uid": "influxdb"
+          }
+        }
+      ]
+    },
+    {
+      "id": 14,
+      "title": "Backplane: operating state",
+      "type": "state-timeline",
+      "gridPos": {
+        "x": 0,
+        "y": 40,
+        "w": 12,
+        "h": 5
+      },
+      "description": "Raw status codes with explicit value mappings. Gaps over 150 seconds are disconnected; missing data is not mapped to OK.",
+      "datasource": {
+        "type": "influxdb",
+        "uid": "influxdb"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "mappings": [
+            {
+              "type": "value",
+              "options": {
+                "1": {
+                  "text": "Unknown",
+                  "color": "gray",
+                  "index": 0
+                },
+                "2": {
+                  "text": "Ready",
+                  "color": "green",
+                  "index": 1
+                },
+                "3": {
+                  "text": "Hardware problem",
+                  "color": "red",
+                  "index": 2
+                },
+                "4": {
+                  "text": "Disconnected",
+                  "color": "red",
+                  "index": 3
+                },
+                "5": {
+                  "text": "Unstable",
+                  "color": "orange",
+                  "index": 4
+                },
+                "6": {
+                  "text": "Inactive",
+                  "color": "gray",
+                  "index": 5
+                },
+                "7": {
+                  "text": "Offline",
+                  "color": "red",
+                  "index": 6
+                },
+                "8": {
+                  "text": "Online",
+                  "color": "green",
+                  "index": 7
+                },
+                "9": {
+                  "text": "Blocked",
+                  "color": "orange",
+                  "index": 8
+                }
+              }
+            }
+          ],
+          "noValue": "No data",
+          "custom": {
+            "lineWidth": 0,
+            "fillOpacity": 90,
+            "spanNulls": false,
+            "insertNulls": 150000
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "showValue": "auto",
+        "mergeValues": true,
+        "alignValue": "left",
+        "rowHeight": 0.8,
+        "legend": {
+          "showLegend": false,
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "query": "from(bucket: \"monitoring\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"idrac_enclosure\" and r._field == \"state\" and r.source == \"${idrac:raw}\")\n  |> aggregateWindow(every: v.windowPeriod, fn: last, createEmpty: false)\n  |> map(fn: (r) => ({_time: r._time, _value: r._value, _field: r.enclosure}))\n  |> group(columns: [\"_field\"])",
+          "datasource": {
+            "type": "influxdb",
+            "uid": "influxdb"
+          }
+        }
+      ]
+    },
+    {
+      "id": 15,
+      "title": "Backplane: combined health",
+      "type": "state-timeline",
+      "gridPos": {
+        "x": 12,
+        "y": 40,
+        "w": 12,
+        "h": 5
+      },
+      "description": "Combined enclosure health can reflect a failed member disk even when backplane operating state is Ready.",
+      "datasource": {
+        "type": "influxdb",
+        "uid": "influxdb"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "mappings": [
+            {
+              "type": "value",
+              "options": {
+                "1": {
+                  "text": "Other",
+                  "color": "gray",
+                  "index": 0
+                },
+                "2": {
+                  "text": "Unknown",
+                  "color": "gray",
+                  "index": 1
+                },
+                "3": {
+                  "text": "OK",
+                  "color": "green",
+                  "index": 2
+                },
+                "4": {
+                  "text": "Warning",
+                  "color": "orange",
+                  "index": 3
+                },
+                "5": {
+                  "text": "Critical",
+                  "color": "red",
+                  "index": 4
+                },
+                "6": {
+                  "text": "Nonrecoverable",
+                  "color": "dark-red",
+                  "index": 5
+                }
+              }
+            }
+          ],
+          "noValue": "No data",
+          "custom": {
+            "lineWidth": 0,
+            "fillOpacity": 90,
+            "spanNulls": false,
+            "insertNulls": 150000
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "showValue": "auto",
+        "mergeValues": true,
+        "alignValue": "left",
+        "rowHeight": 0.8,
+        "legend": {
+          "showLegend": false,
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "query": "from(bucket: \"monitoring\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"idrac_enclosure\" and r._field == \"rollup_status\" and r.source == \"${idrac:raw}\")\n  |> aggregateWindow(every: v.windowPeriod, fn: last, createEmpty: false)\n  |> map(fn: (r) => ({_time: r._time, _value: r._value, _field: r.enclosure}))\n  |> group(columns: [\"_field\"])",
+          "datasource": {
+            "type": "influxdb",
+            "uid": "influxdb"
+          }
+        }
+      ]
+    },
+    {
+      "id": 16,
+      "title": "Temperatures: every exposed sensor",
+      "type": "timeseries",
+      "gridPos": {
+        "x": 0,
+        "y": 45,
+        "w": 24,
+        "h": 9
+      },
+      "description": "Currently inlet, CPU1 and CPU2. No outlet sensor has been exposed. No generic alarm threshold is imposed across different sensor types.",
+      "datasource": {
+        "type": "influxdb",
+        "uid": "influxdb"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "celsius",
+          "decimals": 1,
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "drawStyle": "line",
+            "lineInterpolation": "linear",
+            "lineWidth": 2,
+            "fillOpacity": 8,
+            "showPoints": "never",
+            "spanNulls": false,
+            "insertNulls": 150000,
+            "axisPlacement": "auto",
+            "scaleDistribution": {
+              "type": "linear"
+            }
+          },
+          "min": 0
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "showLegend": true,
+          "displayMode": "table",
+          "placement": "bottom",
+          "calcs": [
+            "lastNotNull",
+            "min",
+            "max"
+          ]
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "query": "from(bucket: \"monitoring\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"idrac_temperature\" and r._field == \"temperature_c\" and r.source == \"${idrac:raw}\")\n  |> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: false)\n  |> map(fn: (r) => ({_time: r._time, _value: r._value, _field: r.sensor}))\n  |> group(columns: [\"_field\"])",
+          "datasource": {
+            "type": "influxdb",
+            "uid": "influxdb"
+          }
+        }
+      ]
+    },
+    {
+      "id": 17,
+      "title": "Temperature sensor health",
+      "type": "state-timeline",
+      "gridPos": {
+        "x": 0,
+        "y": 54,
+        "w": 24,
+        "h": 6
+      },
+      "description": "Raw status codes with explicit value mappings. Gaps over 150 seconds are disconnected; missing data is not mapped to OK.",
+      "datasource": {
+        "type": "influxdb",
+        "uid": "influxdb"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "mappings": [
+            {
+              "type": "value",
+              "options": {
+                "1": {
+                  "text": "Other",
+                  "color": "gray",
+                  "index": 0
+                },
+                "2": {
+                  "text": "Unknown",
+                  "color": "gray",
+                  "index": 1
+                },
+                "3": {
+                  "text": "OK",
+                  "color": "green",
+                  "index": 2
+                },
+                "4": {
+                  "text": "High warning",
+                  "color": "orange",
+                  "index": 3
+                },
+                "5": {
+                  "text": "High critical",
+                  "color": "red",
+                  "index": 4
+                },
+                "6": {
+                  "text": "High nonrecoverable",
+                  "color": "dark-red",
+                  "index": 5
+                },
+                "7": {
+                  "text": "Low warning",
+                  "color": "orange",
+                  "index": 6
+                },
+                "8": {
+                  "text": "Low critical",
+                  "color": "red",
+                  "index": 7
+                },
+                "9": {
+                  "text": "Low nonrecoverable",
+                  "color": "dark-red",
+                  "index": 8
+                },
+                "10": {
+                  "text": "Failed",
+                  "color": "red",
+                  "index": 9
+                }
+              }
+            }
+          ],
+          "noValue": "No data",
+          "custom": {
+            "lineWidth": 0,
+            "fillOpacity": 90,
+            "spanNulls": false,
+            "insertNulls": 150000
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "showValue": "auto",
+        "mergeValues": true,
+        "alignValue": "left",
+        "rowHeight": 0.8,
+        "legend": {
+          "showLegend": false,
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "query": "from(bucket: \"monitoring\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"idrac_temperature\" and r._field == \"status\" and r.source == \"${idrac:raw}\")\n  |> aggregateWindow(every: v.windowPeriod, fn: last, createEmpty: false)\n  |> map(fn: (r) => ({_time: r._time, _value: r._value, _field: r.sensor}))\n  |> group(columns: [\"_field\"])",
+          "datasource": {
+            "type": "influxdb",
+            "uid": "influxdb"
+          }
+        }
+      ]
+    },
+    {
+      "id": 18,
+      "title": "Fan speeds",
+      "type": "timeseries",
+      "gridPos": {
+        "x": 0,
+        "y": 60,
+        "w": 24,
+        "h": 9
+      },
+      "description": "One series per exposed fan: six currently. Additional rows/series appear if collection exposes more fans.",
+      "datasource": {
+        "type": "influxdb",
+        "uid": "influxdb"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "rotrpm",
+          "decimals": 1,
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "drawStyle": "line",
+            "lineInterpolation": "linear",
+            "lineWidth": 2,
+            "fillOpacity": 8,
+            "showPoints": "never",
+            "spanNulls": false,
+            "insertNulls": 150000,
+            "axisPlacement": "auto",
+            "scaleDistribution": {
+              "type": "linear"
+            }
+          },
+          "min": 0
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "showLegend": true,
+          "displayMode": "table",
+          "placement": "bottom",
+          "calcs": [
+            "lastNotNull",
+            "min",
+            "max"
+          ]
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "query": "from(bucket: \"monitoring\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"idrac_fan\" and r._field == \"rpm\" and r.source == \"${idrac:raw}\")\n  |> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: false)\n  |> map(fn: (r) => ({_time: r._time, _value: r._value, _field: r.fan}))\n  |> group(columns: [\"_field\"])",
+          "datasource": {
+            "type": "influxdb",
+            "uid": "influxdb"
+          }
+        }
+      ]
+    },
+    {
+      "id": 19,
+      "title": "Fan health",
+      "type": "state-timeline",
+      "gridPos": {
+        "x": 0,
+        "y": 69,
+        "w": 24,
+        "h": 8
+      },
+      "description": "Raw status codes with explicit value mappings. Gaps over 150 seconds are disconnected; missing data is not mapped to OK.",
+      "datasource": {
+        "type": "influxdb",
+        "uid": "influxdb"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "mappings": [
+            {
+              "type": "value",
+              "options": {
+                "1": {
+                  "text": "Other",
+                  "color": "gray",
+                  "index": 0
+                },
+                "2": {
+                  "text": "Unknown",
+                  "color": "gray",
+                  "index": 1
+                },
+                "3": {
+                  "text": "OK",
+                  "color": "green",
+                  "index": 2
+                },
+                "4": {
+                  "text": "High warning",
+                  "color": "orange",
+                  "index": 3
+                },
+                "5": {
+                  "text": "High critical",
+                  "color": "red",
+                  "index": 4
+                },
+                "6": {
+                  "text": "High nonrecoverable",
+                  "color": "dark-red",
+                  "index": 5
+                },
+                "7": {
+                  "text": "Low warning",
+                  "color": "orange",
+                  "index": 6
+                },
+                "8": {
+                  "text": "Low critical",
+                  "color": "red",
+                  "index": 7
+                },
+                "9": {
+                  "text": "Low nonrecoverable",
+                  "color": "dark-red",
+                  "index": 8
+                },
+                "10": {
+                  "text": "Failed",
+                  "color": "red",
+                  "index": 9
+                }
+              }
+            }
+          ],
+          "noValue": "No data",
+          "custom": {
+            "lineWidth": 0,
+            "fillOpacity": 90,
+            "spanNulls": false,
+            "insertNulls": 150000
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "showValue": "auto",
+        "mergeValues": true,
+        "alignValue": "left",
+        "rowHeight": 0.8,
+        "legend": {
+          "showLegend": false,
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "query": "from(bucket: \"monitoring\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"idrac_fan\" and r._field == \"status\" and r.source == \"${idrac:raw}\")\n  |> aggregateWindow(every: v.windowPeriod, fn: last, createEmpty: false)\n  |> map(fn: (r) => ({_time: r._time, _value: r._value, _field: r.fan}))\n  |> group(columns: [\"_field\"])",
+          "datasource": {
+            "type": "influxdb",
+            "uid": "influxdb"
+          }
+        }
+      ]
+    },
+    {
+      "id": 20,
+      "title": "System power consumption",
+      "type": "timeseries",
+      "gridPos": {
+        "x": 0,
+        "y": 77,
+        "w": 14,
+        "h": 9
+      },
+      "description": "System Board Pwr Consumption is the observed system-watts probe (type 26); its raw value is watts. This is not PSU nameplate capacity.",
+      "datasource": {
+        "type": "influxdb",
+        "uid": "influxdb"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "watt",
+          "decimals": 1,
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "drawStyle": "line",
+            "lineInterpolation": "linear",
+            "lineWidth": 2,
+            "fillOpacity": 8,
+            "showPoints": "never",
+            "spanNulls": false,
+            "insertNulls": 150000,
+            "axisPlacement": "auto",
+            "scaleDistribution": {
+              "type": "linear"
+            }
+          },
+          "min": 0
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "showLegend": true,
+          "displayMode": "table",
+          "placement": "bottom",
+          "calcs": [
+            "lastNotNull",
+            "min",
+            "max"
+          ]
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "query": "from(bucket: \"monitoring\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"idrac_power\" and r._field == \"reading_raw\" and r.source == \"${idrac:raw}\" and r.sensor == \"System Board Pwr Consumption\")\n  |> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: false)\n  |> map(fn: (r) => ({_time: r._time, _value: r._value, _field: r.sensor}))\n  |> group(columns: [\"_field\"])",
+          "datasource": {
+            "type": "influxdb",
+            "uid": "influxdb"
+          }
+        }
+      ]
+    },
+    {
+      "id": 21,
+      "title": "PSU input current",
+      "type": "timeseries",
+      "gridPos": {
+        "x": 14,
+        "y": 77,
+        "w": 10,
+        "h": 9
+      },
+      "description": "Observed type-23 current probes report tenths of amps: divide by 10. Low-resolution current samples should not be used to calculate precise power.",
+      "datasource": {
+        "type": "influxdb",
+        "uid": "influxdb"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "amp",
+          "decimals": 1,
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "drawStyle": "line",
+            "lineInterpolation": "linear",
+            "lineWidth": 2,
+            "fillOpacity": 8,
+            "showPoints": "never",
+            "spanNulls": false,
+            "insertNulls": 150000,
+            "axisPlacement": "auto",
+            "scaleDistribution": {
+              "type": "linear"
+            }
+          },
+          "min": 0
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "showLegend": true,
+          "displayMode": "table",
+          "placement": "bottom",
+          "calcs": [
+            "lastNotNull",
+            "min",
+            "max"
+          ]
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "query": "from(bucket: \"monitoring\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"idrac_power\" and r._field == \"reading_raw\" and r.source == \"${idrac:raw}\" and (r.sensor == \"PS1 Current 1\" or r.sensor == \"PS2 Current 2\"))\n  |> map(fn: (r) => ({r with _value: float(v: r._value) / 10.0}))\n  |> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: false)\n  |> map(fn: (r) => ({_time: r._time, _value: r._value, _field: r.sensor}))\n  |> group(columns: [\"_field\"])",
+          "datasource": {
+            "type": "influxdb",
+            "uid": "influxdb"
+          }
+        }
+      ]
+    },
+    {
+      "id": 22,
+      "title": "Power sensor health",
+      "type": "state-timeline",
+      "gridPos": {
+        "x": 0,
+        "y": 86,
+        "w": 24,
+        "h": 6
+      },
+      "description": "Raw status codes with explicit value mappings. Gaps over 150 seconds are disconnected; missing data is not mapped to OK.",
+      "datasource": {
+        "type": "influxdb",
+        "uid": "influxdb"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "mappings": [
+            {
+              "type": "value",
+              "options": {
+                "1": {
+                  "text": "Other",
+                  "color": "gray",
+                  "index": 0
+                },
+                "2": {
+                  "text": "Unknown",
+                  "color": "gray",
+                  "index": 1
+                },
+                "3": {
+                  "text": "OK",
+                  "color": "green",
+                  "index": 2
+                },
+                "4": {
+                  "text": "High warning",
+                  "color": "orange",
+                  "index": 3
+                },
+                "5": {
+                  "text": "High critical",
+                  "color": "red",
+                  "index": 4
+                },
+                "6": {
+                  "text": "High nonrecoverable",
+                  "color": "dark-red",
+                  "index": 5
+                },
+                "7": {
+                  "text": "Low warning",
+                  "color": "orange",
+                  "index": 6
+                },
+                "8": {
+                  "text": "Low critical",
+                  "color": "red",
+                  "index": 7
+                },
+                "9": {
+                  "text": "Low nonrecoverable",
+                  "color": "dark-red",
+                  "index": 8
+                },
+                "10": {
+                  "text": "Failed",
+                  "color": "red",
+                  "index": 9
+                }
+              }
+            }
+          ],
+          "noValue": "No data",
+          "custom": {
+            "lineWidth": 0,
+            "fillOpacity": 90,
+            "spanNulls": false,
+            "insertNulls": 150000
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "showValue": "auto",
+        "mergeValues": true,
+        "alignValue": "left",
+        "rowHeight": 0.8,
+        "legend": {
+          "showLegend": false,
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "query": "from(bucket: \"monitoring\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"idrac_power\" and r._field == \"status\" and r.source == \"${idrac:raw}\")\n  |> aggregateWindow(every: v.windowPeriod, fn: last, createEmpty: false)\n  |> map(fn: (r) => ({_time: r._time, _value: r._value, _field: r.sensor}))\n  |> group(columns: [\"_field\"])",
+          "datasource": {
+            "type": "influxdb",
+            "uid": "influxdb"
+          }
+        }
+      ]
+    },
+    {
+      "id": 23,
+      "title": "PCIe cards: reported health",
+      "type": "state-timeline",
+      "gridPos": {
+        "x": 0,
+        "y": 92,
+        "w": 24,
+        "h": 6
+      },
+      "description": "Uses the existing HTTP PCIe collection if it was retained. Only configured devices are polled; automatic PCIe discovery is not implemented. No SMART wear, temperature or media errors are inferred.",
+      "datasource": {
+        "type": "influxdb",
+        "uid": "influxdb"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "mappings": [
+            {
+              "type": "value",
+              "options": {
+                "OK": {
+                  "text": "OK",
+                  "color": "green"
+                },
+                "Warning": {
+                  "text": "Warning",
+                  "color": "orange"
+                },
+                "Critical": {
+                  "text": "Critical",
+                  "color": "red"
+                }
+              }
+            }
+          ],
+          "noValue": "No data",
+          "custom": {
+            "lineWidth": 0,
+            "fillOpacity": 90,
+            "spanNulls": false,
+            "insertNulls": 150000
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "showValue": "auto",
+        "mergeValues": true,
+        "alignValue": "left",
+        "rowHeight": 0.8,
+        "legend": {
+          "showLegend": false,
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "query": "from(bucket: \"monitoring\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"idrac_pcie\" and r._field == \"health\" and r.source == \"${idrac:raw}\")\n  |> aggregateWindow(every: v.windowPeriod, fn: last, createEmpty: false)\n  |> map(fn: (r) => ({_time: r._time, _value: r._value, _field: r.device_name + \" [\" + r.device + \"]\"}))\n  |> group(columns: [\"_field\"])",
+          "datasource": {
+            "type": "influxdb",
+            "uid": "influxdb"
+          }
+        }
+      ]
+    },
+    {
+      "id": 24,
+      "title": "How to read this dashboard",
+      "type": "text",
+      "gridPos": {
+        "x": 0,
+        "y": 98,
+        "w": 24,
+        "h": 5
+      },
+      "description": "",
+      "datasource": {
+        "type": "influxdb",
+        "uid": "influxdb"
+      },
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
+      "options": {
+        "mode": "markdown",
+        "content": "**Status is history; charts show readings.** Each PSU, disk, array, controller and sensor gets its own lane. All rows come from collected tags.\n\n**Different enums:** disk state 3 = online, RAID state 2 = online, hardware health 3 = OK. A red enclosure rollup can reflect a failed disk while the backplane itself remains ready.\n\n**Freshness:** top cards use a five-minute lookback; telemetry age turns amber after 150 seconds. Charts disconnect gaps above 150 seconds. Missing data is not proof of health. Long time ranges are downsampled; brief status events can be hidden.\n\n**Scope:** iDRAC hardware health; no OS CPU/RAM utilization, predictive failure, NVMe SMART or energy meter is implied. PCIe health appears only if the existing HTTP input is enabled."
+      },
+      "targets": []
+    }
+  ]
+}
