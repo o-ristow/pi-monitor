@@ -55,6 +55,10 @@ services:
       HOST_PROC: /host/proc
       HOST_SYS: /host/sys
       HOST_MOUNT_PREFIX: /hostfs
+      IDRAC_SNMP_USER: ${IDRAC_SNMP_USER:?required}
+      IDRAC_SNMP_AUTH_PASSWORD: ${IDRAC_SNMP_AUTH_PASSWORD:?required}
+      IDRAC_SNMP_PRIV_PASSWORD: ${IDRAC_SNMP_PRIV_PASSWORD:?required}
+
     volumes:
       - ./telegraf/telegraf.conf:/etc/telegraf/telegraf.conf:ro
       - /proc:/host/proc:ro
