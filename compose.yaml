@@ -58,6 +58,8 @@ services:
       IDRAC_SNMP_USER: ${IDRAC_SNMP_USER:?required}
       IDRAC_SNMP_AUTH_PASSWORD: ${IDRAC_SNMP_AUTH_PASSWORD:?required}
       IDRAC_SNMP_PRIV_PASSWORD: ${IDRAC_SNMP_PRIV_PASSWORD:?required}
+      IDRAC_REDFISH_USER: ${IDRAC_REDFISH_USER:?required}
+      IDRAC_REDFISH_PASSWORD: ${IDRAC_REDFISH_PASSWORD:?required}
 
     volumes:
       - ./telegraf/telegraf.conf:/etc/telegraf/telegraf.conf:ro
