@@ -60,7 +60,9 @@ services:
       IDRAC_SNMP_PRIV_PASSWORD: ${IDRAC_SNMP_PRIV_PASSWORD:?required}
       IDRAC_REDFISH_USER: ${IDRAC_REDFISH_USER:?required}
       IDRAC_REDFISH_PASSWORD: ${IDRAC_REDFISH_PASSWORD:?required}
-
+      ZYXEL_SNMP_USER: ${ZYXEL_SNMP_USER:?required}
+      ZYXEL_SNMP_AUTH_PASSWORD: ${ZYXEL_SNMP_AUTH_PASSWORD:?required}
+      ZYXEL_SNMP_PRIV_PASSWORD: ${ZYXEL_SNMP_PRIV_PASSWORD:?required}
     volumes:
       - ./telegraf/telegraf.conf:/etc/telegraf/telegraf.conf:ro
       - /proc:/host/proc:ro
@@ -71,6 +73,8 @@ services:
       options:
         max-size: "10m"
         max-file: "3"
+#     ports:
+#       - "192.168.10.24:162:1162/udp"
 
 
 volumes:
