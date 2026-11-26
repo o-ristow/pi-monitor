@@ -64,6 +64,9 @@ services:
       ZYXEL_SNMP_USER: ${ZYXEL_SNMP_USER:?required}
       ZYXEL_SNMP_AUTH_PASSWORD: ${ZYXEL_SNMP_AUTH_PASSWORD:?required}
       ZYXEL_SNMP_PRIV_PASSWORD: ${ZYXEL_SNMP_PRIV_PASSWORD:?required}
+      CISCO_SNMP_USER: ${CISCO_SNMP_USER:?required}
+      CISCO_SNMP_AUTH_PASSWORD: ${CISCO_SNMP_AUTH_PASSWORD:?required}
+      CISCO_SNMP_PRIV_PASSWORD: ${CISCO_SNMP_PRIV_PASSWORD:?required}
     volumes:
       - ./telegraf/telegraf.conf:/etc/telegraf/telegraf.conf:ro
       - ./telegraf/telegraf.d:/etc/telegraf/telegraf.d:ro
