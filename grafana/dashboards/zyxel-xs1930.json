@@ -81,10 +81,6 @@
                     {
                       "type": "value",
                       "options": {
-                        "-1": {
-                          "text": "Fault",
-                          "color": "red"
-                        },
                         "0": {
                           "text": "Down",
                           "color": "gray"
@@ -112,6 +108,10 @@
                         "10000": {
                           "text": "10 Gbps",
                           "color": "blue"
+                        },
+                        "-1": {
+                          "text": "Fault",
+                          "color": "red"
                         }
                       }
                     }
@@ -196,10 +196,6 @@
                     {
                       "type": "value",
                       "options": {
-                        "-1": {
-                          "text": "Fault",
-                          "color": "red"
-                        },
                         "0": {
                           "text": "Down",
                           "color": "gray"
@@ -227,6 +223,10 @@
                         "10000": {
                           "text": "10 Gbps",
                           "color": "blue"
+                        },
+                        "-1": {
+                          "text": "Fault",
+                          "color": "red"
                         }
                       }
                     }
@@ -311,10 +311,6 @@
                     {
                       "type": "value",
                       "options": {
-                        "-1": {
-                          "text": "Fault",
-                          "color": "red"
-                        },
                         "0": {
                           "text": "Down",
                           "color": "gray"
@@ -342,6 +338,10 @@
                         "10000": {
                           "text": "10 Gbps",
                           "color": "blue"
+                        },
+                        "-1": {
+                          "text": "Fault",
+                          "color": "red"
                         }
                       }
                     }
@@ -426,10 +426,6 @@
                     {
                       "type": "value",
                       "options": {
-                        "-1": {
-                          "text": "Fault",
-                          "color": "red"
-                        },
                         "0": {
                           "text": "Down",
                           "color": "gray"
@@ -457,6 +453,10 @@
                         "10000": {
                           "text": "10 Gbps",
                           "color": "blue"
+                        },
+                        "-1": {
+                          "text": "Fault",
+                          "color": "red"
                         }
                       }
                     }
@@ -541,10 +541,6 @@
                     {
                       "type": "value",
                       "options": {
-                        "-1": {
-                          "text": "Fault",
-                          "color": "red"
-                        },
                         "0": {
                           "text": "Down",
                           "color": "gray"
@@ -572,6 +568,10 @@
                         "10000": {
                           "text": "10 Gbps",
                           "color": "blue"
+                        },
+                        "-1": {
+                          "text": "Fault",
+                          "color": "red"
                         }
                       }
                     }
@@ -656,10 +656,6 @@
                     {
                       "type": "value",
                       "options": {
-                        "-1": {
-                          "text": "Fault",
-                          "color": "red"
-                        },
                         "0": {
                           "text": "Down",
                           "color": "gray"
@@ -687,6 +683,10 @@
                         "10000": {
                           "text": "10 Gbps",
                           "color": "blue"
+                        },
+                        "-1": {
+                          "text": "Fault",
+                          "color": "red"
                         }
                       }
                     }
@@ -771,10 +771,6 @@
                     {
                       "type": "value",
                       "options": {
-                        "-1": {
-                          "text": "Fault",
-                          "color": "red"
-                        },
                         "0": {
                           "text": "Down",
                           "color": "gray"
@@ -802,6 +798,10 @@
                         "10000": {
                           "text": "10 Gbps",
                           "color": "blue"
+                        },
+                        "-1": {
+                          "text": "Fault",
+                          "color": "red"
                         }
                       }
                     }
@@ -886,10 +886,6 @@
                     {
                       "type": "value",
                       "options": {
-                        "-1": {
-                          "text": "Fault",
-                          "color": "red"
-                        },
                         "0": {
                           "text": "Down",
                           "color": "gray"
@@ -917,6 +913,10 @@
                         "10000": {
                           "text": "10 Gbps",
                           "color": "blue"
+                        },
+                        "-1": {
+                          "text": "Fault",
+                          "color": "red"
                         }
                       }
                     }
@@ -1001,10 +1001,6 @@
                     {
                       "type": "value",
                       "options": {
-                        "-1": {
-                          "text": "Fault",
-                          "color": "red"
-                        },
                         "0": {
                           "text": "Down",
                           "color": "gray"
@@ -1032,6 +1028,10 @@
                         "10000": {
                           "text": "10 Gbps",
                           "color": "blue"
+                        },
+                        "-1": {
+                          "text": "Fault",
+                          "color": "red"
                         }
                       }
                     }
@@ -1116,10 +1116,6 @@
                     {
                       "type": "value",
                       "options": {
-                        "-1": {
-                          "text": "Fault",
-                          "color": "red"
-                        },
                         "0": {
                           "text": "Down",
                           "color": "gray"
@@ -1147,6 +1143,10 @@
                         "10000": {
                           "text": "10 Gbps",
                           "color": "blue"
+                        },
+                        "-1": {
+                          "text": "Fault",
+                          "color": "red"
                         }
                       }
                     }
@@ -1187,7 +1187,7 @@
                         "name": "influxdb"
                       },
                       "spec": {
-                        "query": "import \"strings\"\nimport \"join\"\nimport \"array\"\n\nstatus = \nfrom(bucket: \"monitoring\")\n  |> range(start: -5m)\n  |> filter(fn: (r) =>\n    r._measurement == \"zyxel_interface\" and\n    r.source == \"192.168.10.7\"\n    and r.index =~ /^([1-9]|10)$/\n  )\n  |> filter(fn: (r) => r._field == \"ifHighSpeed\" or r._field == \"ifOperStatus\")\n\n  |> last()\n  |> pivot(\n    rowKey: [\"index\"],\n    columnKey: [\"_field\"],\n    valueColumn: \"_value\"\n  )\n  |> filter(fn: (r) =>\n    exists r.ifHighSpeed and exists r.ifOperStatus\n  )\n  |> map(fn: (r) => ({\n    Port: int(v: r.index),\n    Alias: if exists r.ifAlias then r.ifAlias else \"\",\n    Speed:\n      if r.ifOperStatus == 1 then int(v: r.ifHighSpeed)\n      else if r.ifOperStatus == 2 then 0\n      else -1\n  }))\n  |> group()\n\ntraffic = \nfrom(bucket: \"monitoring\")\n  |> range(start: -5m)\n  |> filter(fn: (r) =>\n    r._measurement == \"zyxel_interface\" and\n    r.source == \"192.168.10.7\"\n    and r.index =~ /^([1-9]|10)$/\n  )\n  |> filter(fn: (r) => r._field == \"ifHCInOctets\" or r._field == \"ifHCOutOctets\" or r._field == \"ifHighSpeed\")\n\n  |> pivot(\n    rowKey: [\"_time\"],\n    columnKey: [\"_field\"],\n    valueColumn: \"_value\"\n  )\n  |> filter(fn: (r) =>\n    exists r.ifHCInOctets and\n    exists r.ifHCOutOctets and\n    exists r.ifHighSpeed\n  )\n  |> derivative(\n    columns: [\"ifHCInOctets\", \"ifHCOutOctets\"],\n    unit: 1s,\n    nonNegative: true\n  )\n  |> filter(fn: (r) =>\n    r.ifHighSpeed > 0 and\n    exists r.ifHCInOctets and\n    exists r.ifHCOutOctets\n  )\n  |> map(fn: (r) => ({\n    index: r.index,\n    rx: float(v: r.ifHCInOctets) * 8.0,\n    tx: float(v: r.ifHCOutOctets) * 8.0,\n    rx_util: float(v: r.ifHCInOctets) * 800.0 /\n             (float(v: r.ifHighSpeed) * 1000000.0),\n    tx_util: float(v: r.ifHCOutOctets) * 800.0 /\n             (float(v: r.ifHighSpeed) * 1000000.0)\n  }))\n  |> group(columns: [\"index\"])\n  |> reduce(\n    identity: {rx: 0.0, tx: 0.0, ru: 0.0, tu: 0.0, n: 0},\n    fn: (r, accumulator) => ({\n      rx: accumulator.rx + r.rx,\n      tx: accumulator.tx + r.tx,\n      ru: accumulator.ru + r.rx_util,\n      tu: accumulator.tu + r.tx_util,\n      n: accumulator.n + 1\n    })\n  )\n  |> map(fn: (r) => ({\n    Port: int(v: r.index),\n    RX: r.rx / float(v: r.n),\n    TX: r.tx / float(v: r.n),\n    RX_util: r.ru / float(v: r.n),\n    TX_util: r.tu / float(v: r.n)\n  }))\n  |> group()\n\nerrors = \nfrom(bucket: \"monitoring\")\n  |> range(start: -5m)\n  |> filter(fn: (r) =>\n    r._measurement == \"zyxel_interface\" and\n    r.source == \"192.168.10.7\"\n    and r.index =~ /^([1-9]|10)$/\n  )\n  |> filter(fn: (r) => r._field == \"ifInErrors\" or r._field == \"ifOutErrors\")\n\n  |> pivot(\n    rowKey: [\"_time\"],\n    columnKey: [\"_field\"],\n    valueColumn: \"_value\"\n  )\n  |> difference(\n    columns: [\"ifInErrors\", \"ifOutErrors\"],\n    nonNegative: true\n  )\n  |> filter(fn: (r) =>\n    exists r.ifInErrors and exists r.ifOutErrors\n  )\n  |> group(columns: [\"index\"])\n  |> reduce(\n    identity: {rx: 0, tx: 0},\n    fn: (r, accumulator) => ({\n      rx: accumulator.rx + int(v: r.ifInErrors),\n      tx: accumulator.tx + int(v: r.ifOutErrors)\n    })\n  )\n  |> map(fn: (r) => ({\n    Port: int(v: r.index),\n    RX_errors: r.rx,\n    TX_errors: r.tx\n  }))\n  |> group()\n\nrawNeighbours = \nfrom(bucket: \"monitoring\")\n  |> range(start: -15m)\n  |> filter(fn: (r) =>\n    r._measurement == \"zyxel_lldp\" and\n    r.source == \"192.168.10.7\"\n  )\n\n  |> last()\n  |> pivot(\n    rowKey: [\"index\"],\n    columnKey: [\"_field\"],\n    valueColumn: \"_value\"\n  )\n  |> map(fn: (r) => ({\n    Port: int(v: strings.split(v: r.index, t: \".\")[1]),\n    Neighbour:\n      if exists r.remote_system_name and\n         r.remote_system_name != \"\"\n      then r.remote_system_name\n      else if exists r.remote_port_id\n      then r.remote_port_id\n      else \"\",\n    Remote_port:\n      if exists r.remote_port_id then r.remote_port_id else \"\"\n  }))\n  |> group()\n\nneighbours = union(tables: [\n  rawNeighbours,\n  array.from(rows: [{\n    Port: -1, Neighbour: \"\", Remote_port: \"\"\n  }])\n])\n  |> group()\n\nst = join.left(\n  left: status,\n  right: traffic,\n  on: (l, r) => l.Port == r.Port,\n  as: (l, r) => ({\n    l with\n    RX: r.RX,\n    TX: r.TX,\n    RX_util: r.RX_util,\n    TX_util: r.TX_util\n  })\n)\n\nste = join.left(\n  left: st,\n  right: errors,\n  on: (l, r) => l.Port == r.Port,\n  as: (l, r) => ({\n    l with\n    RX_errors: r.RX_errors,\n    TX_errors: r.TX_errors\n  })\n)\n\njoin.left(\n  left: ste,\n  right: neighbours,\n  on: (l, r) => l.Port == r.Port,\n  as: (l, r) => ({\n    l with Neighbour: r.Neighbour\n  })\n)\n  |> sort(columns: [\"Port\"])\n"
+                        "query": "import \"strings\"\nimport \"join\"\nimport \"array\"\n\nstatus = \nfrom(bucket: \"monitoring\")\n  |> range(start: -5m)\n  |> filter(fn: (r) =>\n    r._measurement == \"zyxel_interface\" and\n    r.source == \"192.168.10.7\"\n    and r.index =~ /^([1-9]|10)$/\n  )\n  |> filter(fn: (r) => r._field == \"ifHighSpeed\" or r._field == \"ifOperStatus\")\n\n  |> last()\n  |> pivot(\n    rowKey: [\"index\"],\n    columnKey: [\"_field\"],\n    valueColumn: \"_value\"\n  )\n  |> filter(fn: (r) =>\n    exists r.ifHighSpeed and exists r.ifOperStatus\n  )\n  |> map(fn: (r) => ({\n    Port: int(v: r.index),\n    Alias: if exists r.ifAlias then r.ifAlias else \"\",\n    Speed:\n      if r.ifOperStatus == 1 then int(v: r.ifHighSpeed)\n      else if r.ifOperStatus == 2 then 0\n      else -1\n  }))\n  |> group()\n\ntraffic = \nfrom(bucket: \"monitoring\")\n  |> range(start: -5m)\n  |> filter(fn: (r) =>\n    r._measurement == \"zyxel_interface\" and\n    r.source == \"192.168.10.7\"\n    and r.index =~ /^([1-9]|10)$/\n  )\n  |> filter(fn: (r) => r._field == \"ifHCInOctets\" or r._field == \"ifHCOutOctets\" or r._field == \"ifHighSpeed\")\n\n  |> pivot(\n    rowKey: [\"_time\"],\n    columnKey: [\"_field\"],\n    valueColumn: \"_value\"\n  )\n  |> filter(fn: (r) =>\n    exists r.ifHCInOctets and\n    exists r.ifHCOutOctets and\n    exists r.ifHighSpeed\n  )\n  |> derivative(\n    columns: [\"ifHCInOctets\", \"ifHCOutOctets\"],\n    unit: 1s,\n    nonNegative: true\n  )\n  |> filter(fn: (r) =>\n    r.ifHighSpeed > 0 and\n    exists r.ifHCInOctets and\n    exists r.ifHCOutOctets\n  )\n  |> map(fn: (r) => ({\n    index: r.index,\n    rx: float(v: r.ifHCInOctets) * 8.0,\n    tx: float(v: r.ifHCOutOctets) * 8.0,\n    rx_util: float(v: r.ifHCInOctets) * 800.0 /\n             (float(v: r.ifHighSpeed) * 1000000.0),\n    tx_util: float(v: r.ifHCOutOctets) * 800.0 /\n             (float(v: r.ifHighSpeed) * 1000000.0)\n  }))\n  |> group(columns: [\"index\"])\n  |> reduce(\n    identity: {rx: 0.0, tx: 0.0, ru: 0.0, tu: 0.0, n: 0},\n    fn: (r, accumulator) => ({\n      rx: accumulator.rx + r.rx,\n      tx: accumulator.tx + r.tx,\n      ru: accumulator.ru + r.rx_util,\n      tu: accumulator.tu + r.tx_util,\n      n: accumulator.n + 1\n    })\n  )\n  |> map(fn: (r) => ({\n    Port: int(v: r.index),\n    RX: r.rx / float(v: r.n),\n    TX: r.tx / float(v: r.n),\n    RX_util: r.ru / float(v: r.n),\n    TX_util: r.tu / float(v: r.n)\n  }))\n  |> group()\n\nerrors = \nfrom(bucket: \"monitoring\")\n  |> range(start: -5m)\n  |> filter(fn: (r) =>\n    r._measurement == \"zyxel_interface\" and\n    r.source == \"192.168.10.7\"\n    and r.index =~ /^([1-9]|10)$/\n  )\n  |> filter(fn: (r) => r._field == \"ifInErrors\" or r._field == \"ifOutErrors\")\n\n  |> pivot(\n    rowKey: [\"_time\"],\n    columnKey: [\"_field\"],\n    valueColumn: \"_value\"\n  )\n  |> difference(\n    columns: [\"ifInErrors\", \"ifOutErrors\"],\n    nonNegative: true\n  )\n  |> filter(fn: (r) =>\n    exists r.ifInErrors and exists r.ifOutErrors\n  )\n  |> group(columns: [\"index\"])\n  |> reduce(\n    identity: {rx: 0, tx: 0},\n    fn: (r, accumulator) => ({\n      rx: accumulator.rx + int(v: r.ifInErrors),\n      tx: accumulator.tx + int(v: r.ifOutErrors)\n    })\n  )\n  |> map(fn: (r) => ({\n    Port: int(v: r.index),\n    RX_errors: r.rx,\n    TX_errors: r.tx\n  }))\n  |> group()\n\nlldpSamples =\nfrom(bucket: \"monitoring\")\n  |> range(start: -15m)\n  |> filter(fn: (r) =>\n    r._measurement == \"zyxel_lldp\" and\n    r.source == \"192.168.10.7\"\n  )\n\nlatestSnapshot = union(tables: [\n  lldpSamples |> keep(columns: [\"_time\"]) |> group(),\n  array.from(rows: [{_time: time(v: 0)}])\n])\n  |> group()\n  |> sort(columns: [\"_time\"], desc: true)\n  |> limit(n: 1)\n  |> findRecord(fn: (key) => true, idx: 0)\n\ncurrentNeighbours = lldpSamples\n  |> filter(fn: (r) => r._time == latestSnapshot._time)\n  |> pivot(\n    rowKey: [\"_time\", \"index\"],\n    columnKey: [\"_field\"],\n    valueColumn: \"_value\"\n  )\n  |> map(fn: (r) => ({\n    Port: int(v: strings.split(v: r.index, t: \".\")[1]),\n    index: r.index,\n    Neighbour:\n      if exists r.remote_system_name and\n         r.remote_system_name != \"\"\n      then r.remote_system_name\n      else if exists r.remote_port_id\n      then r.remote_port_id\n      else \"\",\n    Remote_port:\n      if exists r.remote_port_id then r.remote_port_id else \"\"\n  }))\n  |> group()\n\nrawNeighbours = currentNeighbours\n  |> group(columns: [\"Port\"])\n  |> sort(columns: [\"index\"])\n  |> first(column: \"index\")\n  |> keep(columns: [\"Port\", \"Neighbour\", \"Remote_port\"])\n  |> group()\n\nneighbours = union(tables: [\n  rawNeighbours,\n  array.from(rows: [{\n    Port: -1, Neighbour: \"\", Remote_port: \"\"\n  }])\n])\n  |> group()\n\nsafeStatus = union(tables: [\n  status,\n  array.from(rows: [{Port: -1, Alias: \"\", Speed: -1}])\n])\n  |> group()\n\nsafeTraffic = union(tables: [\n  traffic,\n  array.from(rows: [{\n    Port: -1, RX: 0.0, TX: 0.0, RX_util: 0.0, TX_util: 0.0\n  }])\n])\n  |> group()\n\nsafeErrors = union(tables: [\n  errors,\n  array.from(rows: [{Port: -1, RX_errors: 0, TX_errors: 0}])\n])\n  |> group()\n\nst = join.left(\n  left: safeStatus,\n  right: safeTraffic,\n  on: (l, r) => l.Port == r.Port,\n  as: (l, r) => ({\n    l with\n    RX: r.RX,\n    TX: r.TX,\n    RX_util: r.RX_util,\n    TX_util: r.TX_util\n  })\n)\n\nste = join.left(\n  left: st,\n  right: safeErrors,\n  on: (l, r) => l.Port == r.Port,\n  as: (l, r) => ({\n    l with\n    RX_errors: r.RX_errors,\n    TX_errors: r.TX_errors\n  })\n)\n\njoin.left(\n  left: ste,\n  right: neighbours,\n  on: (l, r) => l.Port == r.Port,\n  as: (l, r) => ({\n    l with Neighbour: r.Neighbour\n  })\n)\n  |> filter(fn: (r) => r.Port > 0)\n  |> sort(columns: [\"Port\"])\n"
                       }
                     }
                   }
@@ -1223,10 +1223,6 @@
                           {
                             "type": "value",
                             "options": {
-                              "-1": {
-                                "text": "Fault",
-                                "color": "red"
-                              },
                               "0": {
                                 "text": "Down",
                                 "color": "gray"
@@ -1254,6 +1250,10 @@
                               "10000": {
                                 "text": "10 Gbps",
                                 "color": "blue"
+                              },
+                              "-1": {
+                                "text": "Fault",
+                                "color": "red"
                               }
                             }
                           }
@@ -1492,10 +1492,6 @@
                     {
                       "type": "value",
                       "options": {
-                        "-1": {
-                          "text": "Fault",
-                          "color": "red"
-                        },
                         "0": {
                           "text": "Down",
                           "color": "gray"
@@ -1523,6 +1519,10 @@
                         "10000": {
                           "text": "10 Gbps",
                           "color": "blue"
+                        },
+                        "-1": {
+                          "text": "Fault",
+                          "color": "red"
                         }
                       }
                     }
@@ -3034,10 +3034,6 @@
                     {
                       "type": "value",
                       "options": {
-                        "-1": {
-                          "text": "Fault",
-                          "color": "red"
-                        },
                         "0": {
                           "text": "Down",
                           "color": "gray"
@@ -3065,6 +3061,10 @@
                         "10000": {
                           "text": "10 Gbps",
                           "color": "blue"
+                        },
+                        "-1": {
+                          "text": "Fault",
+                          "color": "red"
                         }
                       }
                     }
@@ -3525,7 +3525,7 @@
                         "name": "influxdb"
                       },
                       "spec": {
-                        "query": "import \"strings\"\n\nfrom(bucket: \"monitoring\")\n  |> range(start: -15m)\n  |> filter(fn: (r) =>\n    r._measurement == \"zyxel_lldp\" and\n    r.source == \"192.168.10.7\"\n  )\n\n  |> last()\n  |> pivot(\n    rowKey: [\"index\"],\n    columnKey: [\"_field\"],\n    valueColumn: \"_value\"\n  )\n  |> map(fn: (r) => ({\n    Port: int(v: strings.split(v: r.index, t: \".\")[1]),\n    Neighbour:\n      if exists r.remote_system_name and\n         r.remote_system_name != \"\"\n      then r.remote_system_name\n      else if exists r.remote_port_id\n      then r.remote_port_id\n      else \"\",\n    Remote_port:\n      if exists r.remote_port_id then r.remote_port_id else \"\"\n  }))\n  |> group()\n  |> sort(columns: [\"Port\"])\n"
+                        "query": "import \"strings\"\nimport \"array\"\n\nlldpSamples =\nfrom(bucket: \"monitoring\")\n  |> range(start: -15m)\n  |> filter(fn: (r) =>\n    r._measurement == \"zyxel_lldp\" and\n    r.source == \"192.168.10.7\"\n  )\n\nlatestSnapshot = union(tables: [\n  lldpSamples |> keep(columns: [\"_time\"]) |> group(),\n  array.from(rows: [{_time: time(v: 0)}])\n])\n  |> group()\n  |> sort(columns: [\"_time\"], desc: true)\n  |> limit(n: 1)\n  |> findRecord(fn: (key) => true, idx: 0)\n\ncurrentNeighbours = lldpSamples\n  |> filter(fn: (r) => r._time == latestSnapshot._time)\n  |> pivot(\n    rowKey: [\"_time\", \"index\"],\n    columnKey: [\"_field\"],\n    valueColumn: \"_value\"\n  )\n  |> map(fn: (r) => ({\n    Port: int(v: strings.split(v: r.index, t: \".\")[1]),\n    index: r.index,\n    Neighbour:\n      if exists r.remote_system_name and\n         r.remote_system_name != \"\"\n      then r.remote_system_name\n      else if exists r.remote_port_id\n      then r.remote_port_id\n      else \"\",\n    Remote_port:\n      if exists r.remote_port_id then r.remote_port_id else \"\"\n  }))\n  |> group()\n\ncurrentNeighbours\n  |> keep(columns: [\"Port\", \"Neighbour\", \"Remote_port\"])\n  |> sort(columns: [\"Port\"])\n"
                       }
                     }
                   }
