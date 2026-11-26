@@ -47,6 +47,7 @@ services:
 
   telegraf:
     image: telegraf:1.40.3
+    command: ["telegraf", "--config", "/etc/telegraf/telegraf.conf", "--config-directory", "/etc/telegraf/telegraf.d"]
     restart: unless-stopped
     environment:
       INFLUXDB_TOKEN: ${TELEGRAF_INFLUXDB_TOKEN:?required}
@@ -65,6 +66,7 @@ services:
       ZYXEL_SNMP_PRIV_PASSWORD: ${ZYXEL_SNMP_PRIV_PASSWORD:?required}
     volumes:
       - ./telegraf/telegraf.conf:/etc/telegraf/telegraf.conf:ro
+      - ./telegraf/telegraf.d:/etc/telegraf/telegraf.d:ro
       - /proc:/host/proc:ro
       - /sys:/host/sys:ro
       - /:/hostfs:ro,rslave
