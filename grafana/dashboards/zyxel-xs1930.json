@@ -9,16 +9,23 @@
     "editable": true,
     "tags": [
       "network",
-      "zyxel"
+      "zyxel",
+      "home"
     ],
     "elements": {
       "panel-1": {
         "kind": "Panel",
         "spec": {
           "id": 1,
-          "title": "Port 7 - Cisco-Switch",
-          "description": "",
-          "links": [],
+          "title": "Port 01",
+          "description": "Latest link state within the last five minutes.",
+          "links": [
+            {
+              "title": "Select port for details",
+              "url": "/d/zyxel-xs1930?var-port=1",
+              "targetBlank": false
+            }
+          ],
           "data": {
             "kind": "QueryGroup",
             "spec": {
@@ -36,7 +43,7 @@
                         "name": "influxdb"
                       },
                       "spec": {
-                        "query": "\nfrom(bucket: \"monitoring\")\n  |> range(start: -5m)\n  |> filter(fn: (r) =>\n    r._measurement == \"zyxel_interface\" and\n    r.source == \"192.168.10.7\" and\n    r.index == \"7\"\n  )\n\n  |> filter(fn: (r) =>\n    r._field == \"ifHighSpeed\" or\n    r._field == \"ifOperStatus\"\n  )\n  |> pivot(rowKey: [\"_time\"], columnKey: [\"_field\"], valueColumn: \"_value\")\n  |> map(fn: (r) => ({\n    _time: r._time,\n    _value: if r.ifOperStatus == 1 then int(v: r.ifHighSpeed) else 0\n  }))\n  |> last()\n"
+                        "query": "\nfrom(bucket: \"monitoring\")\n  |> range(start: -5m)\n  |> filter(fn: (r) =>\n    r._measurement == \"zyxel_interface\" and\n    r.source == \"192.168.10.7\"\n    and r.index == \"1\"\n  )\n  |> filter(fn: (r) => r._field == \"ifHighSpeed\" or r._field == \"ifOperStatus\")\n\n  |> pivot(\n    rowKey: [\"_time\"],\n    columnKey: [\"_field\"],\n    valueColumn: \"_value\"\n  )\n  |> filter(fn: (r) =>\n    exists r.ifHighSpeed and exists r.ifOperStatus\n  )\n  |> map(fn: (r) => ({\n    r with\n    _value:\n      if r.ifOperStatus == 1 then int(v: r.ifHighSpeed)\n      else if r.ifOperStatus == 2 then 0\n      else -1,\n    _field: if exists r.ifAlias and r.ifAlias != \"\"\n            then r.ifAlias\n            else r.ifDescr\n  }))\n\n  |> last()\n  |> keep(columns: [\"_time\", \"_field\", \"_value\"])\n  |> group(columns: [\"_field\"])\n"
                       }
                     }
                   }
@@ -54,7 +61,13 @@
               "options": {
                 "colorMode": "background",
                 "graphMode": "none",
-                "textMode": "auto",
+                "justifyMode": "center",
+                "textMode": "value_and_name",
+                "orientation": "auto",
+                "text": {
+                  "titleSize": 12,
+                  "valueSize": 22
+                },
                 "reduceOptions": {
                   "calcs": [
                     "lastNotNull"
@@ -68,9 +81,17 @@
                     {
                       "type": "value",
                       "options": {
+                        "-1": {
+                          "text": "Fault",
+                          "color": "red"
+                        },
                         "0": {
-                          "text": "Disconnected",
+                          "text": "Down",
                           "color": "gray"
+                        },
+                        "10": {
+                          "text": "10 Mbps",
+                          "color": "orange"
                         },
                         "100": {
                           "text": "100 Mbps",
@@ -94,7 +115,12 @@
                         }
                       }
                     }
-                  ]
+                  ],
+                  "color": {
+                    "mode": "thresholds"
+                  },
+                  "noValue": "No telemetry",
+                  "displayName": "${__field.labels._field}"
                 },
                 "overrides": []
               }
@@ -106,7 +132,1042 @@
         "kind": "Panel",
         "spec": {
           "id": 2,
-          "title": "RX / TX utilization",
+          "title": "Port 02",
+          "description": "Latest link state within the last five minutes.",
+          "links": [
+            {
+              "title": "Select port for details",
+              "url": "/d/zyxel-xs1930?var-port=2",
+              "targetBlank": false
+            }
+          ],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "refId": "A",
+                    "hidden": false,
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "influxdb",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "influxdb"
+                      },
+                      "spec": {
+                        "query": "\nfrom(bucket: \"monitoring\")\n  |> range(start: -5m)\n  |> filter(fn: (r) =>\n    r._measurement == \"zyxel_interface\" and\n    r.source == \"192.168.10.7\"\n    and r.index == \"2\"\n  )\n  |> filter(fn: (r) => r._field == \"ifHighSpeed\" or r._field == \"ifOperStatus\")\n\n  |> pivot(\n    rowKey: [\"_time\"],\n    columnKey: [\"_field\"],\n    valueColumn: \"_value\"\n  )\n  |> filter(fn: (r) =>\n    exists r.ifHighSpeed and exists r.ifOperStatus\n  )\n  |> map(fn: (r) => ({\n    r with\n    _value:\n      if r.ifOperStatus == 1 then int(v: r.ifHighSpeed)\n      else if r.ifOperStatus == 2 then 0\n      else -1,\n    _field: if exists r.ifAlias and r.ifAlias != \"\"\n            then r.ifAlias\n            else r.ifDescr\n  }))\n\n  |> last()\n  |> keep(columns: [\"_time\", \"_field\", \"_value\"])\n  |> group(columns: [\"_field\"])\n"
+                      }
+                    }
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "stat",
+            "version": "13.3.1",
+            "spec": {
+              "options": {
+                "colorMode": "background",
+                "graphMode": "none",
+                "justifyMode": "center",
+                "textMode": "value_and_name",
+                "orientation": "auto",
+                "text": {
+                  "titleSize": 12,
+                  "valueSize": 22
+                },
+                "reduceOptions": {
+                  "calcs": [
+                    "lastNotNull"
+                  ],
+                  "values": false
+                }
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "mappings": [
+                    {
+                      "type": "value",
+                      "options": {
+                        "-1": {
+                          "text": "Fault",
+                          "color": "red"
+                        },
+                        "0": {
+                          "text": "Down",
+                          "color": "gray"
+                        },
+                        "10": {
+                          "text": "10 Mbps",
+                          "color": "orange"
+                        },
+                        "100": {
+                          "text": "100 Mbps",
+                          "color": "orange"
+                        },
+                        "1000": {
+                          "text": "1 Gbps",
+                          "color": "green"
+                        },
+                        "2500": {
+                          "text": "2.5 Gbps",
+                          "color": "purple"
+                        },
+                        "5000": {
+                          "text": "5 Gbps",
+                          "color": "purple"
+                        },
+                        "10000": {
+                          "text": "10 Gbps",
+                          "color": "blue"
+                        }
+                      }
+                    }
+                  ],
+                  "color": {
+                    "mode": "thresholds"
+                  },
+                  "noValue": "No telemetry",
+                  "displayName": "${__field.labels._field}"
+                },
+                "overrides": []
+              }
+            }
+          }
+        }
+      },
+      "panel-3": {
+        "kind": "Panel",
+        "spec": {
+          "id": 3,
+          "title": "Port 03",
+          "description": "Latest link state within the last five minutes.",
+          "links": [
+            {
+              "title": "Select port for details",
+              "url": "/d/zyxel-xs1930?var-port=3",
+              "targetBlank": false
+            }
+          ],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "refId": "A",
+                    "hidden": false,
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "influxdb",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "influxdb"
+                      },
+                      "spec": {
+                        "query": "\nfrom(bucket: \"monitoring\")\n  |> range(start: -5m)\n  |> filter(fn: (r) =>\n    r._measurement == \"zyxel_interface\" and\n    r.source == \"192.168.10.7\"\n    and r.index == \"3\"\n  )\n  |> filter(fn: (r) => r._field == \"ifHighSpeed\" or r._field == \"ifOperStatus\")\n\n  |> pivot(\n    rowKey: [\"_time\"],\n    columnKey: [\"_field\"],\n    valueColumn: \"_value\"\n  )\n  |> filter(fn: (r) =>\n    exists r.ifHighSpeed and exists r.ifOperStatus\n  )\n  |> map(fn: (r) => ({\n    r with\n    _value:\n      if r.ifOperStatus == 1 then int(v: r.ifHighSpeed)\n      else if r.ifOperStatus == 2 then 0\n      else -1,\n    _field: if exists r.ifAlias and r.ifAlias != \"\"\n            then r.ifAlias\n            else r.ifDescr\n  }))\n\n  |> last()\n  |> keep(columns: [\"_time\", \"_field\", \"_value\"])\n  |> group(columns: [\"_field\"])\n"
+                      }
+                    }
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "stat",
+            "version": "13.3.1",
+            "spec": {
+              "options": {
+                "colorMode": "background",
+                "graphMode": "none",
+                "justifyMode": "center",
+                "textMode": "value_and_name",
+                "orientation": "auto",
+                "text": {
+                  "titleSize": 12,
+                  "valueSize": 22
+                },
+                "reduceOptions": {
+                  "calcs": [
+                    "lastNotNull"
+                  ],
+                  "values": false
+                }
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "mappings": [
+                    {
+                      "type": "value",
+                      "options": {
+                        "-1": {
+                          "text": "Fault",
+                          "color": "red"
+                        },
+                        "0": {
+                          "text": "Down",
+                          "color": "gray"
+                        },
+                        "10": {
+                          "text": "10 Mbps",
+                          "color": "orange"
+                        },
+                        "100": {
+                          "text": "100 Mbps",
+                          "color": "orange"
+                        },
+                        "1000": {
+                          "text": "1 Gbps",
+                          "color": "green"
+                        },
+                        "2500": {
+                          "text": "2.5 Gbps",
+                          "color": "purple"
+                        },
+                        "5000": {
+                          "text": "5 Gbps",
+                          "color": "purple"
+                        },
+                        "10000": {
+                          "text": "10 Gbps",
+                          "color": "blue"
+                        }
+                      }
+                    }
+                  ],
+                  "color": {
+                    "mode": "thresholds"
+                  },
+                  "noValue": "No telemetry",
+                  "displayName": "${__field.labels._field}"
+                },
+                "overrides": []
+              }
+            }
+          }
+        }
+      },
+      "panel-4": {
+        "kind": "Panel",
+        "spec": {
+          "id": 4,
+          "title": "Port 04",
+          "description": "Latest link state within the last five minutes.",
+          "links": [
+            {
+              "title": "Select port for details",
+              "url": "/d/zyxel-xs1930?var-port=4",
+              "targetBlank": false
+            }
+          ],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "refId": "A",
+                    "hidden": false,
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "influxdb",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "influxdb"
+                      },
+                      "spec": {
+                        "query": "\nfrom(bucket: \"monitoring\")\n  |> range(start: -5m)\n  |> filter(fn: (r) =>\n    r._measurement == \"zyxel_interface\" and\n    r.source == \"192.168.10.7\"\n    and r.index == \"4\"\n  )\n  |> filter(fn: (r) => r._field == \"ifHighSpeed\" or r._field == \"ifOperStatus\")\n\n  |> pivot(\n    rowKey: [\"_time\"],\n    columnKey: [\"_field\"],\n    valueColumn: \"_value\"\n  )\n  |> filter(fn: (r) =>\n    exists r.ifHighSpeed and exists r.ifOperStatus\n  )\n  |> map(fn: (r) => ({\n    r with\n    _value:\n      if r.ifOperStatus == 1 then int(v: r.ifHighSpeed)\n      else if r.ifOperStatus == 2 then 0\n      else -1,\n    _field: if exists r.ifAlias and r.ifAlias != \"\"\n            then r.ifAlias\n            else r.ifDescr\n  }))\n\n  |> last()\n  |> keep(columns: [\"_time\", \"_field\", \"_value\"])\n  |> group(columns: [\"_field\"])\n"
+                      }
+                    }
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "stat",
+            "version": "13.3.1",
+            "spec": {
+              "options": {
+                "colorMode": "background",
+                "graphMode": "none",
+                "justifyMode": "center",
+                "textMode": "value_and_name",
+                "orientation": "auto",
+                "text": {
+                  "titleSize": 12,
+                  "valueSize": 22
+                },
+                "reduceOptions": {
+                  "calcs": [
+                    "lastNotNull"
+                  ],
+                  "values": false
+                }
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "mappings": [
+                    {
+                      "type": "value",
+                      "options": {
+                        "-1": {
+                          "text": "Fault",
+                          "color": "red"
+                        },
+                        "0": {
+                          "text": "Down",
+                          "color": "gray"
+                        },
+                        "10": {
+                          "text": "10 Mbps",
+                          "color": "orange"
+                        },
+                        "100": {
+                          "text": "100 Mbps",
+                          "color": "orange"
+                        },
+                        "1000": {
+                          "text": "1 Gbps",
+                          "color": "green"
+                        },
+                        "2500": {
+                          "text": "2.5 Gbps",
+                          "color": "purple"
+                        },
+                        "5000": {
+                          "text": "5 Gbps",
+                          "color": "purple"
+                        },
+                        "10000": {
+                          "text": "10 Gbps",
+                          "color": "blue"
+                        }
+                      }
+                    }
+                  ],
+                  "color": {
+                    "mode": "thresholds"
+                  },
+                  "noValue": "No telemetry",
+                  "displayName": "${__field.labels._field}"
+                },
+                "overrides": []
+              }
+            }
+          }
+        }
+      },
+      "panel-5": {
+        "kind": "Panel",
+        "spec": {
+          "id": 5,
+          "title": "Port 05",
+          "description": "Latest link state within the last five minutes.",
+          "links": [
+            {
+              "title": "Select port for details",
+              "url": "/d/zyxel-xs1930?var-port=5",
+              "targetBlank": false
+            }
+          ],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "refId": "A",
+                    "hidden": false,
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "influxdb",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "influxdb"
+                      },
+                      "spec": {
+                        "query": "\nfrom(bucket: \"monitoring\")\n  |> range(start: -5m)\n  |> filter(fn: (r) =>\n    r._measurement == \"zyxel_interface\" and\n    r.source == \"192.168.10.7\"\n    and r.index == \"5\"\n  )\n  |> filter(fn: (r) => r._field == \"ifHighSpeed\" or r._field == \"ifOperStatus\")\n\n  |> pivot(\n    rowKey: [\"_time\"],\n    columnKey: [\"_field\"],\n    valueColumn: \"_value\"\n  )\n  |> filter(fn: (r) =>\n    exists r.ifHighSpeed and exists r.ifOperStatus\n  )\n  |> map(fn: (r) => ({\n    r with\n    _value:\n      if r.ifOperStatus == 1 then int(v: r.ifHighSpeed)\n      else if r.ifOperStatus == 2 then 0\n      else -1,\n    _field: if exists r.ifAlias and r.ifAlias != \"\"\n            then r.ifAlias\n            else r.ifDescr\n  }))\n\n  |> last()\n  |> keep(columns: [\"_time\", \"_field\", \"_value\"])\n  |> group(columns: [\"_field\"])\n"
+                      }
+                    }
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "stat",
+            "version": "13.3.1",
+            "spec": {
+              "options": {
+                "colorMode": "background",
+                "graphMode": "none",
+                "justifyMode": "center",
+                "textMode": "value_and_name",
+                "orientation": "auto",
+                "text": {
+                  "titleSize": 12,
+                  "valueSize": 22
+                },
+                "reduceOptions": {
+                  "calcs": [
+                    "lastNotNull"
+                  ],
+                  "values": false
+                }
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "mappings": [
+                    {
+                      "type": "value",
+                      "options": {
+                        "-1": {
+                          "text": "Fault",
+                          "color": "red"
+                        },
+                        "0": {
+                          "text": "Down",
+                          "color": "gray"
+                        },
+                        "10": {
+                          "text": "10 Mbps",
+                          "color": "orange"
+                        },
+                        "100": {
+                          "text": "100 Mbps",
+                          "color": "orange"
+                        },
+                        "1000": {
+                          "text": "1 Gbps",
+                          "color": "green"
+                        },
+                        "2500": {
+                          "text": "2.5 Gbps",
+                          "color": "purple"
+                        },
+                        "5000": {
+                          "text": "5 Gbps",
+                          "color": "purple"
+                        },
+                        "10000": {
+                          "text": "10 Gbps",
+                          "color": "blue"
+                        }
+                      }
+                    }
+                  ],
+                  "color": {
+                    "mode": "thresholds"
+                  },
+                  "noValue": "No telemetry",
+                  "displayName": "${__field.labels._field}"
+                },
+                "overrides": []
+              }
+            }
+          }
+        }
+      },
+      "panel-6": {
+        "kind": "Panel",
+        "spec": {
+          "id": 6,
+          "title": "Port 06",
+          "description": "Latest link state within the last five minutes.",
+          "links": [
+            {
+              "title": "Select port for details",
+              "url": "/d/zyxel-xs1930?var-port=6",
+              "targetBlank": false
+            }
+          ],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "refId": "A",
+                    "hidden": false,
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "influxdb",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "influxdb"
+                      },
+                      "spec": {
+                        "query": "\nfrom(bucket: \"monitoring\")\n  |> range(start: -5m)\n  |> filter(fn: (r) =>\n    r._measurement == \"zyxel_interface\" and\n    r.source == \"192.168.10.7\"\n    and r.index == \"6\"\n  )\n  |> filter(fn: (r) => r._field == \"ifHighSpeed\" or r._field == \"ifOperStatus\")\n\n  |> pivot(\n    rowKey: [\"_time\"],\n    columnKey: [\"_field\"],\n    valueColumn: \"_value\"\n  )\n  |> filter(fn: (r) =>\n    exists r.ifHighSpeed and exists r.ifOperStatus\n  )\n  |> map(fn: (r) => ({\n    r with\n    _value:\n      if r.ifOperStatus == 1 then int(v: r.ifHighSpeed)\n      else if r.ifOperStatus == 2 then 0\n      else -1,\n    _field: if exists r.ifAlias and r.ifAlias != \"\"\n            then r.ifAlias\n            else r.ifDescr\n  }))\n\n  |> last()\n  |> keep(columns: [\"_time\", \"_field\", \"_value\"])\n  |> group(columns: [\"_field\"])\n"
+                      }
+                    }
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "stat",
+            "version": "13.3.1",
+            "spec": {
+              "options": {
+                "colorMode": "background",
+                "graphMode": "none",
+                "justifyMode": "center",
+                "textMode": "value_and_name",
+                "orientation": "auto",
+                "text": {
+                  "titleSize": 12,
+                  "valueSize": 22
+                },
+                "reduceOptions": {
+                  "calcs": [
+                    "lastNotNull"
+                  ],
+                  "values": false
+                }
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "mappings": [
+                    {
+                      "type": "value",
+                      "options": {
+                        "-1": {
+                          "text": "Fault",
+                          "color": "red"
+                        },
+                        "0": {
+                          "text": "Down",
+                          "color": "gray"
+                        },
+                        "10": {
+                          "text": "10 Mbps",
+                          "color": "orange"
+                        },
+                        "100": {
+                          "text": "100 Mbps",
+                          "color": "orange"
+                        },
+                        "1000": {
+                          "text": "1 Gbps",
+                          "color": "green"
+                        },
+                        "2500": {
+                          "text": "2.5 Gbps",
+                          "color": "purple"
+                        },
+                        "5000": {
+                          "text": "5 Gbps",
+                          "color": "purple"
+                        },
+                        "10000": {
+                          "text": "10 Gbps",
+                          "color": "blue"
+                        }
+                      }
+                    }
+                  ],
+                  "color": {
+                    "mode": "thresholds"
+                  },
+                  "noValue": "No telemetry",
+                  "displayName": "${__field.labels._field}"
+                },
+                "overrides": []
+              }
+            }
+          }
+        }
+      },
+      "panel-7": {
+        "kind": "Panel",
+        "spec": {
+          "id": 7,
+          "title": "Port 07",
+          "description": "Latest link state within the last five minutes.",
+          "links": [
+            {
+              "title": "Select port for details",
+              "url": "/d/zyxel-xs1930?var-port=7",
+              "targetBlank": false
+            }
+          ],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "refId": "A",
+                    "hidden": false,
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "influxdb",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "influxdb"
+                      },
+                      "spec": {
+                        "query": "\nfrom(bucket: \"monitoring\")\n  |> range(start: -5m)\n  |> filter(fn: (r) =>\n    r._measurement == \"zyxel_interface\" and\n    r.source == \"192.168.10.7\"\n    and r.index == \"7\"\n  )\n  |> filter(fn: (r) => r._field == \"ifHighSpeed\" or r._field == \"ifOperStatus\")\n\n  |> pivot(\n    rowKey: [\"_time\"],\n    columnKey: [\"_field\"],\n    valueColumn: \"_value\"\n  )\n  |> filter(fn: (r) =>\n    exists r.ifHighSpeed and exists r.ifOperStatus\n  )\n  |> map(fn: (r) => ({\n    r with\n    _value:\n      if r.ifOperStatus == 1 then int(v: r.ifHighSpeed)\n      else if r.ifOperStatus == 2 then 0\n      else -1,\n    _field: if exists r.ifAlias and r.ifAlias != \"\"\n            then r.ifAlias\n            else r.ifDescr\n  }))\n\n  |> last()\n  |> keep(columns: [\"_time\", \"_field\", \"_value\"])\n  |> group(columns: [\"_field\"])\n"
+                      }
+                    }
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "stat",
+            "version": "13.3.1",
+            "spec": {
+              "options": {
+                "colorMode": "background",
+                "graphMode": "none",
+                "justifyMode": "center",
+                "textMode": "value_and_name",
+                "orientation": "auto",
+                "text": {
+                  "titleSize": 12,
+                  "valueSize": 22
+                },
+                "reduceOptions": {
+                  "calcs": [
+                    "lastNotNull"
+                  ],
+                  "values": false
+                }
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "mappings": [
+                    {
+                      "type": "value",
+                      "options": {
+                        "-1": {
+                          "text": "Fault",
+                          "color": "red"
+                        },
+                        "0": {
+                          "text": "Down",
+                          "color": "gray"
+                        },
+                        "10": {
+                          "text": "10 Mbps",
+                          "color": "orange"
+                        },
+                        "100": {
+                          "text": "100 Mbps",
+                          "color": "orange"
+                        },
+                        "1000": {
+                          "text": "1 Gbps",
+                          "color": "green"
+                        },
+                        "2500": {
+                          "text": "2.5 Gbps",
+                          "color": "purple"
+                        },
+                        "5000": {
+                          "text": "5 Gbps",
+                          "color": "purple"
+                        },
+                        "10000": {
+                          "text": "10 Gbps",
+                          "color": "blue"
+                        }
+                      }
+                    }
+                  ],
+                  "color": {
+                    "mode": "thresholds"
+                  },
+                  "noValue": "No telemetry",
+                  "displayName": "${__field.labels._field}"
+                },
+                "overrides": []
+              }
+            }
+          }
+        }
+      },
+      "panel-8": {
+        "kind": "Panel",
+        "spec": {
+          "id": 8,
+          "title": "Port 08",
+          "description": "Latest link state within the last five minutes.",
+          "links": [
+            {
+              "title": "Select port for details",
+              "url": "/d/zyxel-xs1930?var-port=8",
+              "targetBlank": false
+            }
+          ],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "refId": "A",
+                    "hidden": false,
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "influxdb",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "influxdb"
+                      },
+                      "spec": {
+                        "query": "\nfrom(bucket: \"monitoring\")\n  |> range(start: -5m)\n  |> filter(fn: (r) =>\n    r._measurement == \"zyxel_interface\" and\n    r.source == \"192.168.10.7\"\n    and r.index == \"8\"\n  )\n  |> filter(fn: (r) => r._field == \"ifHighSpeed\" or r._field == \"ifOperStatus\")\n\n  |> pivot(\n    rowKey: [\"_time\"],\n    columnKey: [\"_field\"],\n    valueColumn: \"_value\"\n  )\n  |> filter(fn: (r) =>\n    exists r.ifHighSpeed and exists r.ifOperStatus\n  )\n  |> map(fn: (r) => ({\n    r with\n    _value:\n      if r.ifOperStatus == 1 then int(v: r.ifHighSpeed)\n      else if r.ifOperStatus == 2 then 0\n      else -1,\n    _field: if exists r.ifAlias and r.ifAlias != \"\"\n            then r.ifAlias\n            else r.ifDescr\n  }))\n\n  |> last()\n  |> keep(columns: [\"_time\", \"_field\", \"_value\"])\n  |> group(columns: [\"_field\"])\n"
+                      }
+                    }
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "stat",
+            "version": "13.3.1",
+            "spec": {
+              "options": {
+                "colorMode": "background",
+                "graphMode": "none",
+                "justifyMode": "center",
+                "textMode": "value_and_name",
+                "orientation": "auto",
+                "text": {
+                  "titleSize": 12,
+                  "valueSize": 22
+                },
+                "reduceOptions": {
+                  "calcs": [
+                    "lastNotNull"
+                  ],
+                  "values": false
+                }
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "mappings": [
+                    {
+                      "type": "value",
+                      "options": {
+                        "-1": {
+                          "text": "Fault",
+                          "color": "red"
+                        },
+                        "0": {
+                          "text": "Down",
+                          "color": "gray"
+                        },
+                        "10": {
+                          "text": "10 Mbps",
+                          "color": "orange"
+                        },
+                        "100": {
+                          "text": "100 Mbps",
+                          "color": "orange"
+                        },
+                        "1000": {
+                          "text": "1 Gbps",
+                          "color": "green"
+                        },
+                        "2500": {
+                          "text": "2.5 Gbps",
+                          "color": "purple"
+                        },
+                        "5000": {
+                          "text": "5 Gbps",
+                          "color": "purple"
+                        },
+                        "10000": {
+                          "text": "10 Gbps",
+                          "color": "blue"
+                        }
+                      }
+                    }
+                  ],
+                  "color": {
+                    "mode": "thresholds"
+                  },
+                  "noValue": "No telemetry",
+                  "displayName": "${__field.labels._field}"
+                },
+                "overrides": []
+              }
+            }
+          }
+        }
+      },
+      "panel-9": {
+        "kind": "Panel",
+        "spec": {
+          "id": 9,
+          "title": "Port 09",
+          "description": "Latest link state within the last five minutes.",
+          "links": [
+            {
+              "title": "Select port for details",
+              "url": "/d/zyxel-xs1930?var-port=9",
+              "targetBlank": false
+            }
+          ],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "refId": "A",
+                    "hidden": false,
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "influxdb",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "influxdb"
+                      },
+                      "spec": {
+                        "query": "\nfrom(bucket: \"monitoring\")\n  |> range(start: -5m)\n  |> filter(fn: (r) =>\n    r._measurement == \"zyxel_interface\" and\n    r.source == \"192.168.10.7\"\n    and r.index == \"9\"\n  )\n  |> filter(fn: (r) => r._field == \"ifHighSpeed\" or r._field == \"ifOperStatus\")\n\n  |> pivot(\n    rowKey: [\"_time\"],\n    columnKey: [\"_field\"],\n    valueColumn: \"_value\"\n  )\n  |> filter(fn: (r) =>\n    exists r.ifHighSpeed and exists r.ifOperStatus\n  )\n  |> map(fn: (r) => ({\n    r with\n    _value:\n      if r.ifOperStatus == 1 then int(v: r.ifHighSpeed)\n      else if r.ifOperStatus == 2 then 0\n      else -1,\n    _field: if exists r.ifAlias and r.ifAlias != \"\"\n            then r.ifAlias\n            else r.ifDescr\n  }))\n\n  |> last()\n  |> keep(columns: [\"_time\", \"_field\", \"_value\"])\n  |> group(columns: [\"_field\"])\n"
+                      }
+                    }
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "stat",
+            "version": "13.3.1",
+            "spec": {
+              "options": {
+                "colorMode": "background",
+                "graphMode": "none",
+                "justifyMode": "center",
+                "textMode": "value_and_name",
+                "orientation": "auto",
+                "text": {
+                  "titleSize": 12,
+                  "valueSize": 22
+                },
+                "reduceOptions": {
+                  "calcs": [
+                    "lastNotNull"
+                  ],
+                  "values": false
+                }
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "mappings": [
+                    {
+                      "type": "value",
+                      "options": {
+                        "-1": {
+                          "text": "Fault",
+                          "color": "red"
+                        },
+                        "0": {
+                          "text": "Down",
+                          "color": "gray"
+                        },
+                        "10": {
+                          "text": "10 Mbps",
+                          "color": "orange"
+                        },
+                        "100": {
+                          "text": "100 Mbps",
+                          "color": "orange"
+                        },
+                        "1000": {
+                          "text": "1 Gbps",
+                          "color": "green"
+                        },
+                        "2500": {
+                          "text": "2.5 Gbps",
+                          "color": "purple"
+                        },
+                        "5000": {
+                          "text": "5 Gbps",
+                          "color": "purple"
+                        },
+                        "10000": {
+                          "text": "10 Gbps",
+                          "color": "blue"
+                        }
+                      }
+                    }
+                  ],
+                  "color": {
+                    "mode": "thresholds"
+                  },
+                  "noValue": "No telemetry",
+                  "displayName": "${__field.labels._field}"
+                },
+                "overrides": []
+              }
+            }
+          }
+        }
+      },
+      "panel-10": {
+        "kind": "Panel",
+        "spec": {
+          "id": 10,
+          "title": "Port 10",
+          "description": "Latest link state within the last five minutes.",
+          "links": [
+            {
+              "title": "Select port for details",
+              "url": "/d/zyxel-xs1930?var-port=10",
+              "targetBlank": false
+            }
+          ],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "refId": "A",
+                    "hidden": false,
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "influxdb",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "influxdb"
+                      },
+                      "spec": {
+                        "query": "\nfrom(bucket: \"monitoring\")\n  |> range(start: -5m)\n  |> filter(fn: (r) =>\n    r._measurement == \"zyxel_interface\" and\n    r.source == \"192.168.10.7\"\n    and r.index == \"10\"\n  )\n  |> filter(fn: (r) => r._field == \"ifHighSpeed\" or r._field == \"ifOperStatus\")\n\n  |> pivot(\n    rowKey: [\"_time\"],\n    columnKey: [\"_field\"],\n    valueColumn: \"_value\"\n  )\n  |> filter(fn: (r) =>\n    exists r.ifHighSpeed and exists r.ifOperStatus\n  )\n  |> map(fn: (r) => ({\n    r with\n    _value:\n      if r.ifOperStatus == 1 then int(v: r.ifHighSpeed)\n      else if r.ifOperStatus == 2 then 0\n      else -1,\n    _field: if exists r.ifAlias and r.ifAlias != \"\"\n            then r.ifAlias\n            else r.ifDescr\n  }))\n\n  |> last()\n  |> keep(columns: [\"_time\", \"_field\", \"_value\"])\n  |> group(columns: [\"_field\"])\n"
+                      }
+                    }
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "stat",
+            "version": "13.3.1",
+            "spec": {
+              "options": {
+                "colorMode": "background",
+                "graphMode": "none",
+                "justifyMode": "center",
+                "textMode": "value_and_name",
+                "orientation": "auto",
+                "text": {
+                  "titleSize": 12,
+                  "valueSize": 22
+                },
+                "reduceOptions": {
+                  "calcs": [
+                    "lastNotNull"
+                  ],
+                  "values": false
+                }
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "mappings": [
+                    {
+                      "type": "value",
+                      "options": {
+                        "-1": {
+                          "text": "Fault",
+                          "color": "red"
+                        },
+                        "0": {
+                          "text": "Down",
+                          "color": "gray"
+                        },
+                        "10": {
+                          "text": "10 Mbps",
+                          "color": "orange"
+                        },
+                        "100": {
+                          "text": "100 Mbps",
+                          "color": "orange"
+                        },
+                        "1000": {
+                          "text": "1 Gbps",
+                          "color": "green"
+                        },
+                        "2500": {
+                          "text": "2.5 Gbps",
+                          "color": "purple"
+                        },
+                        "5000": {
+                          "text": "5 Gbps",
+                          "color": "purple"
+                        },
+                        "10000": {
+                          "text": "10 Gbps",
+                          "color": "blue"
+                        }
+                      }
+                    }
+                  ],
+                  "color": {
+                    "mode": "thresholds"
+                  },
+                  "noValue": "No telemetry",
+                  "displayName": "${__field.labels._field}"
+                },
+                "overrides": []
+              }
+            }
+          }
+        }
+      },
+      "panel-11": {
+        "kind": "Panel",
+        "spec": {
+          "id": 11,
+          "title": "Port statistics - last 5 minutes",
           "description": "",
           "links": [],
           "data": {
@@ -126,7 +1187,7 @@
                         "name": "influxdb"
                       },
                       "spec": {
-                        "query": "\nfrom(bucket: \"monitoring\")\n  |> range(start: -5m)\n  |> filter(fn: (r) =>\n    r._measurement == \"zyxel_interface\" and\n    r.source == \"192.168.10.7\" and\n    r.index == \"7\"\n  )\n\n  |> filter(fn: (r) =>\n    r._field == \"ifHCInOctets\" or\n    r._field == \"ifHCOutOctets\" or\n    r._field == \"ifHighSpeed\"\n  )\n  |> pivot(rowKey: [\"_time\"], columnKey: [\"_field\"], valueColumn: \"_value\")\n  |> derivative(\n    columns: [\"ifHCInOctets\", \"ifHCOutOctets\"],\n    unit: 1s,\n    nonNegative: true\n  )\n  |> filter(fn: (r) => r.ifHighSpeed > 0)\n  |> map(fn: (r) => ({\n    _time: r._time,\n    RX: float(v: r.ifHCInOctets) * 800.0 / (float(v: r.ifHighSpeed) * 1000000.0),\n    TX: float(v: r.ifHCOutOctets) * 800.0 / (float(v: r.ifHighSpeed) * 1000000.0)\n  }))\n"
+                        "query": "import \"strings\"\nimport \"join\"\nimport \"array\"\n\nstatus = \nfrom(bucket: \"monitoring\")\n  |> range(start: -5m)\n  |> filter(fn: (r) =>\n    r._measurement == \"zyxel_interface\" and\n    r.source == \"192.168.10.7\"\n    and r.index =~ /^([1-9]|10)$/\n  )\n  |> filter(fn: (r) => r._field == \"ifHighSpeed\" or r._field == \"ifOperStatus\")\n\n  |> last()\n  |> pivot(\n    rowKey: [\"index\"],\n    columnKey: [\"_field\"],\n    valueColumn: \"_value\"\n  )\n  |> filter(fn: (r) =>\n    exists r.ifHighSpeed and exists r.ifOperStatus\n  )\n  |> map(fn: (r) => ({\n    Port: int(v: r.index),\n    Alias: if exists r.ifAlias then r.ifAlias else \"\",\n    Speed:\n      if r.ifOperStatus == 1 then int(v: r.ifHighSpeed)\n      else if r.ifOperStatus == 2 then 0\n      else -1\n  }))\n  |> group()\n\ntraffic = \nfrom(bucket: \"monitoring\")\n  |> range(start: -5m)\n  |> filter(fn: (r) =>\n    r._measurement == \"zyxel_interface\" and\n    r.source == \"192.168.10.7\"\n    and r.index =~ /^([1-9]|10)$/\n  )\n  |> filter(fn: (r) => r._field == \"ifHCInOctets\" or r._field == \"ifHCOutOctets\" or r._field == \"ifHighSpeed\")\n\n  |> pivot(\n    rowKey: [\"_time\"],\n    columnKey: [\"_field\"],\n    valueColumn: \"_value\"\n  )\n  |> filter(fn: (r) =>\n    exists r.ifHCInOctets and\n    exists r.ifHCOutOctets and\n    exists r.ifHighSpeed\n  )\n  |> derivative(\n    columns: [\"ifHCInOctets\", \"ifHCOutOctets\"],\n    unit: 1s,\n    nonNegative: true\n  )\n  |> filter(fn: (r) =>\n    r.ifHighSpeed > 0 and\n    exists r.ifHCInOctets and\n    exists r.ifHCOutOctets\n  )\n  |> map(fn: (r) => ({\n    index: r.index,\n    rx: float(v: r.ifHCInOctets) * 8.0,\n    tx: float(v: r.ifHCOutOctets) * 8.0,\n    rx_util: float(v: r.ifHCInOctets) * 800.0 /\n             (float(v: r.ifHighSpeed) * 1000000.0),\n    tx_util: float(v: r.ifHCOutOctets) * 800.0 /\n             (float(v: r.ifHighSpeed) * 1000000.0)\n  }))\n  |> group(columns: [\"index\"])\n  |> reduce(\n    identity: {rx: 0.0, tx: 0.0, ru: 0.0, tu: 0.0, n: 0},\n    fn: (r, accumulator) => ({\n      rx: accumulator.rx + r.rx,\n      tx: accumulator.tx + r.tx,\n      ru: accumulator.ru + r.rx_util,\n      tu: accumulator.tu + r.tx_util,\n      n: accumulator.n + 1\n    })\n  )\n  |> map(fn: (r) => ({\n    Port: int(v: r.index),\n    RX: r.rx / float(v: r.n),\n    TX: r.tx / float(v: r.n),\n    RX_util: r.ru / float(v: r.n),\n    TX_util: r.tu / float(v: r.n)\n  }))\n  |> group()\n\nerrors = \nfrom(bucket: \"monitoring\")\n  |> range(start: -5m)\n  |> filter(fn: (r) =>\n    r._measurement == \"zyxel_interface\" and\n    r.source == \"192.168.10.7\"\n    and r.index =~ /^([1-9]|10)$/\n  )\n  |> filter(fn: (r) => r._field == \"ifInErrors\" or r._field == \"ifOutErrors\")\n\n  |> pivot(\n    rowKey: [\"_time\"],\n    columnKey: [\"_field\"],\n    valueColumn: \"_value\"\n  )\n  |> difference(\n    columns: [\"ifInErrors\", \"ifOutErrors\"],\n    nonNegative: true\n  )\n  |> filter(fn: (r) =>\n    exists r.ifInErrors and exists r.ifOutErrors\n  )\n  |> group(columns: [\"index\"])\n  |> reduce(\n    identity: {rx: 0, tx: 0},\n    fn: (r, accumulator) => ({\n      rx: accumulator.rx + int(v: r.ifInErrors),\n      tx: accumulator.tx + int(v: r.ifOutErrors)\n    })\n  )\n  |> map(fn: (r) => ({\n    Port: int(v: r.index),\n    RX_errors: r.rx,\n    TX_errors: r.tx\n  }))\n  |> group()\n\nrawNeighbours = \nfrom(bucket: \"monitoring\")\n  |> range(start: -15m)\n  |> filter(fn: (r) =>\n    r._measurement == \"zyxel_lldp\" and\n    r.source == \"192.168.10.7\"\n  )\n\n  |> last()\n  |> pivot(\n    rowKey: [\"index\"],\n    columnKey: [\"_field\"],\n    valueColumn: \"_value\"\n  )\n  |> map(fn: (r) => ({\n    Port: int(v: strings.split(v: r.index, t: \".\")[1]),\n    Neighbour:\n      if exists r.remote_system_name and\n         r.remote_system_name != \"\"\n      then r.remote_system_name\n      else if exists r.remote_port_id\n      then r.remote_port_id\n      else \"\",\n    Remote_port:\n      if exists r.remote_port_id then r.remote_port_id else \"\"\n  }))\n  |> group()\n\nneighbours = union(tables: [\n  rawNeighbours,\n  array.from(rows: [{\n    Port: -1, Neighbour: \"\", Remote_port: \"\"\n  }])\n])\n  |> group()\n\nst = join.left(\n  left: status,\n  right: traffic,\n  on: (l, r) => l.Port == r.Port,\n  as: (l, r) => ({\n    l with\n    RX: r.RX,\n    TX: r.TX,\n    RX_util: r.RX_util,\n    TX_util: r.TX_util\n  })\n)\n\nste = join.left(\n  left: st,\n  right: errors,\n  on: (l, r) => l.Port == r.Port,\n  as: (l, r) => ({\n    l with\n    RX_errors: r.RX_errors,\n    TX_errors: r.TX_errors\n  })\n)\n\njoin.left(\n  left: ste,\n  right: neighbours,\n  on: (l, r) => l.Port == r.Port,\n  as: (l, r) => ({\n    l with Neighbour: r.Neighbour\n  })\n)\n  |> sort(columns: [\"Port\"])\n"
                       }
                     }
                   }
@@ -138,26 +1199,373 @@
           },
           "vizConfig": {
             "kind": "VizConfig",
-            "group": "bargauge",
+            "group": "table",
             "version": "13.3.1",
             "spec": {
               "options": {
-                "orientation": "vertical",
-                "displayMode": "gradient",
-                "showUnfilled": true,
-                "reduceOptions": {
-                  "calcs": [
-                    "mean"
-                  ],
-                  "values": false
+                "showHeader": true,
+                "cellHeight": "sm"
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "noValue": "-"
+                },
+                "overrides": [
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "Speed"
+                    },
+                    "properties": [
+                      {
+                        "id": "mappings",
+                        "value": [
+                          {
+                            "type": "value",
+                            "options": {
+                              "-1": {
+                                "text": "Fault",
+                                "color": "red"
+                              },
+                              "0": {
+                                "text": "Down",
+                                "color": "gray"
+                              },
+                              "10": {
+                                "text": "10 Mbps",
+                                "color": "orange"
+                              },
+                              "100": {
+                                "text": "100 Mbps",
+                                "color": "orange"
+                              },
+                              "1000": {
+                                "text": "1 Gbps",
+                                "color": "green"
+                              },
+                              "2500": {
+                                "text": "2.5 Gbps",
+                                "color": "purple"
+                              },
+                              "5000": {
+                                "text": "5 Gbps",
+                                "color": "purple"
+                              },
+                              "10000": {
+                                "text": "10 Gbps",
+                                "color": "blue"
+                              }
+                            }
+                          }
+                        ]
+                      },
+                      {
+                        "id": "custom.cellOptions",
+                        "value": {
+                          "type": "color-background"
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "RX"
+                    },
+                    "properties": [
+                      {
+                        "id": "unit",
+                        "value": "bps"
+                      },
+                      {
+                        "id": "decimals",
+                        "value": 1
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "TX"
+                    },
+                    "properties": [
+                      {
+                        "id": "unit",
+                        "value": "bps"
+                      },
+                      {
+                        "id": "decimals",
+                        "value": 1
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "RX_util"
+                    },
+                    "properties": [
+                      {
+                        "id": "unit",
+                        "value": "percent"
+                      },
+                      {
+                        "id": "min",
+                        "value": 0
+                      },
+                      {
+                        "id": "max",
+                        "value": 100
+                      },
+                      {
+                        "id": "decimals",
+                        "value": 2
+                      },
+                      {
+                        "id": "custom.cellOptions",
+                        "value": {
+                          "type": "gauge",
+                          "mode": "basic"
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "TX_util"
+                    },
+                    "properties": [
+                      {
+                        "id": "unit",
+                        "value": "percent"
+                      },
+                      {
+                        "id": "min",
+                        "value": 0
+                      },
+                      {
+                        "id": "max",
+                        "value": 100
+                      },
+                      {
+                        "id": "decimals",
+                        "value": 2
+                      },
+                      {
+                        "id": "custom.cellOptions",
+                        "value": {
+                          "type": "gauge",
+                          "mode": "basic"
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "RX_errors"
+                    },
+                    "properties": [
+                      {
+                        "id": "thresholds",
+                        "value": {
+                          "mode": "absolute",
+                          "steps": [
+                            {
+                              "value": null,
+                              "color": "green"
+                            },
+                            {
+                              "value": 1,
+                              "color": "red"
+                            }
+                          ]
+                        }
+                      },
+                      {
+                        "id": "color",
+                        "value": {
+                          "mode": "thresholds"
+                        }
+                      },
+                      {
+                        "id": "custom.cellOptions",
+                        "value": {
+                          "type": "color-text"
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "TX_errors"
+                    },
+                    "properties": [
+                      {
+                        "id": "thresholds",
+                        "value": {
+                          "mode": "absolute",
+                          "steps": [
+                            {
+                              "value": null,
+                              "color": "green"
+                            },
+                            {
+                              "value": 1,
+                              "color": "red"
+                            }
+                          ]
+                        }
+                      },
+                      {
+                        "id": "color",
+                        "value": {
+                          "mode": "thresholds"
+                        }
+                      },
+                      {
+                        "id": "custom.cellOptions",
+                        "value": {
+                          "type": "color-text"
+                        }
+                      }
+                    ]
+                  }
+                ]
+              }
+            }
+          }
+        }
+      },
+      "panel-12": {
+        "kind": "Panel",
+        "spec": {
+          "id": 12,
+          "title": "Link speed history",
+          "description": "",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "refId": "A",
+                    "hidden": false,
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "influxdb",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "influxdb"
+                      },
+                      "spec": {
+                        "query": "\nfrom(bucket: \"monitoring\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) =>\n    r._measurement == \"zyxel_interface\" and\n    r.source == \"192.168.10.7\"\n    and r.index =~ /^([1-9]|10)$/\n  )\n  |> filter(fn: (r) => r._field == \"ifHighSpeed\" or r._field == \"ifOperStatus\")\n\n  |> pivot(\n    rowKey: [\"_time\"],\n    columnKey: [\"_field\"],\n    valueColumn: \"_value\"\n  )\n  |> filter(fn: (r) =>\n    exists r.ifHighSpeed and exists r.ifOperStatus\n  )\n  |> map(fn: (r) => ({\n    r with\n    _value:\n      if r.ifOperStatus == 1 then int(v: r.ifHighSpeed)\n      else if r.ifOperStatus == 2 then 0\n      else -1,\n    _field: if exists r.ifAlias and r.ifAlias != \"\"\n            then r.ifAlias\n            else r.ifDescr\n  }))\n\n  |> map(fn: (r) => ({\n    r with _field: \"Port \" + (if int(v: r.index) < 10 then \"0\" + r.index else r.index)\n  }))\n  |> group(columns: [\"_field\"])\n  |> aggregateWindow(every: 10s, fn: last, createEmpty: false)\n\n  |> keep(columns: [\"_time\", \"_field\", \"_value\"])\n  |> group(columns: [\"_field\"])\n"
+                      }
+                    }
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "state-timeline",
+            "version": "13.3.1",
+            "spec": {
+              "options": {
+                "mergeValues": true,
+                "showValue": "never",
+                "rowHeight": 0.7,
+                "legend": {
+                  "showLegend": false
                 }
               },
               "fieldConfig": {
                 "defaults": {
-                  "unit": "percent",
-                  "min": 0,
-                  "max": 100,
-                  "decimals": 2
+                  "mappings": [
+                    {
+                      "type": "value",
+                      "options": {
+                        "-1": {
+                          "text": "Fault",
+                          "color": "red"
+                        },
+                        "0": {
+                          "text": "Down",
+                          "color": "gray"
+                        },
+                        "10": {
+                          "text": "10 Mbps",
+                          "color": "orange"
+                        },
+                        "100": {
+                          "text": "100 Mbps",
+                          "color": "orange"
+                        },
+                        "1000": {
+                          "text": "1 Gbps",
+                          "color": "green"
+                        },
+                        "2500": {
+                          "text": "2.5 Gbps",
+                          "color": "purple"
+                        },
+                        "5000": {
+                          "text": "5 Gbps",
+                          "color": "purple"
+                        },
+                        "10000": {
+                          "text": "10 Gbps",
+                          "color": "blue"
+                        }
+                      }
+                    }
+                  ],
+                  "color": {
+                    "mode": "thresholds"
+                  },
+                  "noValue": "No telemetry",
+                  "custom": {
+                    "fillOpacity": 75,
+                    "lineWidth": 0,
+                    "spanNulls": false
+                  },
+                  "displayName": "${__field.labels._field}",
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "value": null,
+                        "color": "red"
+                      },
+                      {
+                        "value": 0,
+                        "color": "gray"
+                      },
+                      {
+                        "value": 10,
+                        "color": "orange"
+                      },
+                      {
+                        "value": 1000,
+                        "color": "green"
+                      },
+                      {
+                        "value": 2500,
+                        "color": "purple"
+                      },
+                      {
+                        "value": 10000,
+                        "color": "blue"
+                      }
+                    ]
+                  }
                 },
                 "overrides": []
               }
@@ -165,10 +1573,128 @@
           }
         }
       },
-      "panel-3": {
+      "panel-13": {
         "kind": "Panel",
         "spec": {
-          "id": 3,
+          "id": 13,
+          "title": "RX throughput",
+          "description": "",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "refId": "A",
+                    "hidden": false,
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "influxdb",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "influxdb"
+                      },
+                      "spec": {
+                        "query": "\nfrom(bucket: \"monitoring\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) =>\n    r._measurement == \"zyxel_interface\" and\n    r.source == \"192.168.10.7\"\n    and r.index =~ /^([1-9]|10)$/\n  )\n  |> filter(fn: (r) => r._field == \"ifHCInOctets\")\n\n  |> derivative(unit: 1s, nonNegative: true)\n  |> map(fn: (r) => ({\n    r with\n    _value: float(v: r._value) * 8.0,\n    _field: \"Port \" + r.index\n  }))\n  |> group(columns: [\"_field\"])\n  |> aggregateWindow(every: v.windowPeriod, fn: mean)\n"
+                      }
+                    }
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "timeseries",
+            "version": "13.3.1",
+            "spec": {
+              "options": {
+                "legend": {
+                  "showLegend": true,
+                  "placement": "bottom",
+                  "displayMode": "list"
+                },
+                "tooltip": {
+                  "mode": "multi"
+                }
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "unit": "bps"
+                },
+                "overrides": []
+              }
+            }
+          }
+        }
+      },
+      "panel-14": {
+        "kind": "Panel",
+        "spec": {
+          "id": 14,
+          "title": "TX throughput",
+          "description": "",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "refId": "A",
+                    "hidden": false,
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "influxdb",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "influxdb"
+                      },
+                      "spec": {
+                        "query": "\nfrom(bucket: \"monitoring\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) =>\n    r._measurement == \"zyxel_interface\" and\n    r.source == \"192.168.10.7\"\n    and r.index =~ /^([1-9]|10)$/\n  )\n  |> filter(fn: (r) => r._field == \"ifHCOutOctets\")\n\n  |> derivative(unit: 1s, nonNegative: true)\n  |> map(fn: (r) => ({\n    r with\n    _value: float(v: r._value) * 8.0,\n    _field: \"Port \" + r.index\n  }))\n  |> group(columns: [\"_field\"])\n  |> aggregateWindow(every: v.windowPeriod, fn: mean)\n"
+                      }
+                    }
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "timeseries",
+            "version": "13.3.1",
+            "spec": {
+              "options": {
+                "legend": {
+                  "showLegend": true,
+                  "placement": "bottom",
+                  "displayMode": "list"
+                },
+                "tooltip": {
+                  "mode": "multi"
+                }
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "unit": "bps"
+                },
+                "overrides": []
+              }
+            }
+          }
+        }
+      },
+      "panel-15": {
+        "kind": "Panel",
+        "spec": {
+          "id": 15,
           "title": "RX / TX errors",
           "description": "",
           "links": [],
@@ -189,7 +1715,7 @@
                         "name": "influxdb"
                       },
                       "spec": {
-                        "query": "\nfrom(bucket: \"monitoring\")\n  |> range(start: -5m)\n  |> filter(fn: (r) =>\n    r._measurement == \"zyxel_interface\" and\n    r.source == \"192.168.10.7\" and\n    r.index == \"7\"\n  )\n\n  |> filter(fn: (r) =>\n    r._field == \"ifInErrors\" or\n    r._field == \"ifOutErrors\"\n  )\n  |> difference(nonNegative: true)\n  |> sum()\n  |> map(fn: (r) => ({\n    r with _field: if r._field == \"ifInErrors\" then \"RX\" else \"TX\"\n  }))\n  |> group()\n  |> pivot(rowKey: [\"index\"], columnKey: [\"_field\"], valueColumn: \"_value\")\n  |> keep(columns: [\"RX\", \"TX\"])\n"
+                        "query": "\nfrom(bucket: \"monitoring\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) =>\n    r._measurement == \"zyxel_interface\" and\n    r.source == \"192.168.10.7\"\n    and r.index =~ /^([1-9]|10)$/\n  )\n  |> filter(fn: (r) => r._field == \"ifInErrors\" or r._field == \"ifOutErrors\")\n\n  |> difference(nonNegative: true)\n  |> map(fn: (r) => ({\n    r with\n    _field: \"Port \" + r.index + \" \" + r._field\n  }))\n  |> group(columns: [\"_field\"])\n  |> aggregateWindow(every: v.windowPeriod, fn: sum)\n"
                       }
                     }
                   }
@@ -201,38 +1727,22 @@
           },
           "vizConfig": {
             "kind": "VizConfig",
-            "group": "stat",
+            "group": "timeseries",
             "version": "13.3.1",
             "spec": {
               "options": {
-                "colorMode": "background",
-                "graphMode": "none",
-                "textMode": "auto",
-                "reduceOptions": {
-                  "calcs": [
-                    "lastNotNull"
-                  ],
-                  "values": false
+                "legend": {
+                  "showLegend": true,
+                  "placement": "bottom",
+                  "displayMode": "list"
+                },
+                "tooltip": {
+                  "mode": "multi"
                 }
               },
               "fieldConfig": {
                 "defaults": {
-                  "thresholds": {
-                    "mode": "absolute",
-                    "steps": [
-                      {
-                        "value": null,
-                        "color": "green"
-                      },
-                      {
-                        "value": 1,
-                        "color": "red"
-                      }
-                    ]
-                  },
-                  "color": {
-                    "mode": "thresholds"
-                  }
+                  "min": 0
                 },
                 "overrides": []
               }
@@ -240,11 +1750,11 @@
           }
         }
       },
-      "panel-4": {
+      "panel-16": {
         "kind": "Panel",
         "spec": {
-          "id": 4,
-          "title": "LLDP neighbour",
+          "id": 16,
+          "title": "RX / TX discards",
           "description": "",
           "links": [],
           "data": {
@@ -264,7 +1774,1372 @@
                         "name": "influxdb"
                       },
                       "spec": {
-                        "query": "\nfrom(bucket: \"monitoring\")\n  |> range(start: -15m)\n  |> filter(fn: (r) =>\n    r._measurement == \"zyxel_lldp\" and\n    r.source == \"192.168.10.7\" and\n    r.index =~ /^[^.]+\\.7\\./\n  )\n  |> pivot(rowKey: [\"_time\", \"index\"], columnKey: [\"_field\"], valueColumn: \"_value\")\n  |> group()\n  |> sort(columns: [\"_time\"])\n  |> map(fn: (r) => ({\n    _time: r._time,\n    _value: r.remote_system_name + \" / \" + r.remote_port_id\n  }))\n  |> last()\n"
+                        "query": "\nfrom(bucket: \"monitoring\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) =>\n    r._measurement == \"zyxel_interface\" and\n    r.source == \"192.168.10.7\"\n    and r.index =~ /^([1-9]|10)$/\n  )\n  |> filter(fn: (r) => r._field == \"ifInDiscards\" or r._field == \"ifOutDiscards\")\n\n  |> difference(nonNegative: true)\n  |> map(fn: (r) => ({\n    r with\n    _field: \"Port \" + r.index + \" \" + r._field\n  }))\n  |> group(columns: [\"_field\"])\n  |> aggregateWindow(every: v.windowPeriod, fn: sum)\n"
+                      }
+                    }
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "timeseries",
+            "version": "13.3.1",
+            "spec": {
+              "options": {
+                "legend": {
+                  "showLegend": true,
+                  "placement": "bottom",
+                  "displayMode": "list"
+                },
+                "tooltip": {
+                  "mode": "multi"
+                }
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "min": 0
+                },
+                "overrides": []
+              }
+            }
+          }
+        }
+      },
+      "panel-17": {
+        "kind": "Panel",
+        "spec": {
+          "id": 17,
+          "title": "CPU",
+          "description": "",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "refId": "A",
+                    "hidden": false,
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "influxdb",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "influxdb"
+                      },
+                      "spec": {
+                        "query": "\nfrom(bucket: \"monitoring\")\n  |> range(start: -5m)\n  |> filter(fn: (r) =>\n    r._measurement == \"zyxel_system\" and\n    r.source == \"192.168.10.7\"\n  )\n  |> filter(fn: (r) => r._field == \"cpu_usage\")\n  |> last()\n"
+                      }
+                    }
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "gauge",
+            "version": "13.3.1",
+            "spec": {
+              "options": {
+                "reduceOptions": {
+                  "calcs": [
+                    "lastNotNull"
+                  ],
+                  "values": false
+                },
+                "showThresholdMarkers": true,
+                "showThresholdLabels": true,
+                "textMode": "value"
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "unit": "percent",
+                  "decimals": 0,
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "value": null,
+                        "color": "green"
+                      },
+                      {
+                        "value": 70,
+                        "color": "orange"
+                      },
+                      {
+                        "value": 90,
+                        "color": "red"
+                      }
+                    ]
+                  },
+                  "color": {
+                    "mode": "thresholds"
+                  },
+                  "min": 0,
+                  "max": 100,
+                  "links": [
+                    {
+                      "title": "Show history",
+                      "url": "/d/zyxel-xs1930?${__url_time_range}&viewPanel=28"
+                    }
+                  ]
+                },
+                "overrides": []
+              }
+            }
+          }
+        }
+      },
+      "panel-18": {
+        "kind": "Panel",
+        "spec": {
+          "id": 18,
+          "title": "RAM",
+          "description": "",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "refId": "A",
+                    "hidden": false,
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "influxdb",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "influxdb"
+                      },
+                      "spec": {
+                        "query": "\nfrom(bucket: \"monitoring\")\n  |> range(start: -5m)\n  |> filter(fn: (r) =>\n    r._measurement == \"zyxel_system\" and\n    r.source == \"192.168.10.7\"\n  )\n  |> filter(fn: (r) => r._field == \"memory_usage\")\n  |> last()\n"
+                      }
+                    }
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "gauge",
+            "version": "13.3.1",
+            "spec": {
+              "options": {
+                "reduceOptions": {
+                  "calcs": [
+                    "lastNotNull"
+                  ],
+                  "values": false
+                },
+                "showThresholdMarkers": true,
+                "showThresholdLabels": true,
+                "textMode": "value"
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "unit": "percent",
+                  "decimals": 0,
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "value": null,
+                        "color": "green"
+                      },
+                      {
+                        "value": 70,
+                        "color": "orange"
+                      },
+                      {
+                        "value": 90,
+                        "color": "red"
+                      }
+                    ]
+                  },
+                  "color": {
+                    "mode": "thresholds"
+                  },
+                  "min": 0,
+                  "max": 100,
+                  "links": [
+                    {
+                      "title": "Show history",
+                      "url": "/d/zyxel-xs1930?${__url_time_range}&viewPanel=28"
+                    }
+                  ]
+                },
+                "overrides": []
+              }
+            }
+          }
+        }
+      },
+      "panel-19": {
+        "kind": "Panel",
+        "spec": {
+          "id": 19,
+          "title": "MAC temperature",
+          "description": "",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "refId": "A",
+                    "hidden": false,
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "influxdb",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "influxdb"
+                      },
+                      "spec": {
+                        "query": "\nfrom(bucket: \"monitoring\")\n  |> range(start: -5m)\n  |> filter(fn: (r) =>\n    r._measurement == \"zyxel_temperature\" and\n    r.source == \"192.168.10.7\"\n  )\n  |> filter(fn: (r) => r._field == \"current\")\n  |> filter(fn: (r) => r.sensor == \"MAC\")\n  |> last()\n"
+                      }
+                    }
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "gauge",
+            "version": "13.3.1",
+            "spec": {
+              "options": {
+                "reduceOptions": {
+                  "calcs": [
+                    "lastNotNull"
+                  ],
+                  "values": false
+                },
+                "showThresholdMarkers": true,
+                "showThresholdLabels": true,
+                "textMode": "value"
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "unit": "celsius",
+                  "decimals": 0,
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "value": null,
+                        "color": "green"
+                      },
+                      {
+                        "value": 82,
+                        "color": "orange"
+                      },
+                      {
+                        "value": 92,
+                        "color": "red"
+                      }
+                    ]
+                  },
+                  "color": {
+                    "mode": "thresholds"
+                  },
+                  "min": 0,
+                  "max": 100,
+                  "links": [
+                    {
+                      "title": "Show history",
+                      "url": "/d/zyxel-xs1930?${__url_time_range}&viewPanel=25"
+                    }
+                  ]
+                },
+                "overrides": []
+              }
+            }
+          }
+        }
+      },
+      "panel-20": {
+        "kind": "Panel",
+        "spec": {
+          "id": 20,
+          "title": "Board temperature",
+          "description": "",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "refId": "A",
+                    "hidden": false,
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "influxdb",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "influxdb"
+                      },
+                      "spec": {
+                        "query": "\nfrom(bucket: \"monitoring\")\n  |> range(start: -5m)\n  |> filter(fn: (r) =>\n    r._measurement == \"zyxel_temperature\" and\n    r.source == \"192.168.10.7\"\n  )\n  |> filter(fn: (r) => r._field == \"current\")\n  |> filter(fn: (r) => r.sensor == \"BOARD\")\n  |> last()\n"
+                      }
+                    }
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "gauge",
+            "version": "13.3.1",
+            "spec": {
+              "options": {
+                "reduceOptions": {
+                  "calcs": [
+                    "lastNotNull"
+                  ],
+                  "values": false
+                },
+                "showThresholdMarkers": true,
+                "showThresholdLabels": true,
+                "textMode": "value"
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "unit": "celsius",
+                  "decimals": 0,
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "value": null,
+                        "color": "green"
+                      },
+                      {
+                        "value": 100,
+                        "color": "orange"
+                      },
+                      {
+                        "value": 110,
+                        "color": "red"
+                      }
+                    ]
+                  },
+                  "color": {
+                    "mode": "thresholds"
+                  },
+                  "min": 0,
+                  "max": 120,
+                  "links": [
+                    {
+                      "title": "Show history",
+                      "url": "/d/zyxel-xs1930?${__url_time_range}&viewPanel=25"
+                    }
+                  ]
+                },
+                "overrides": []
+              }
+            }
+          }
+        }
+      },
+      "panel-21": {
+        "kind": "Panel",
+        "spec": {
+          "id": 21,
+          "title": "PHY temperature",
+          "description": "",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "refId": "A",
+                    "hidden": false,
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "influxdb",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "influxdb"
+                      },
+                      "spec": {
+                        "query": "\nfrom(bucket: \"monitoring\")\n  |> range(start: -5m)\n  |> filter(fn: (r) =>\n    r._measurement == \"zyxel_temperature\" and\n    r.source == \"192.168.10.7\"\n  )\n  |> filter(fn: (r) => r._field == \"current\")\n  |> filter(fn: (r) => r.sensor == \"PHY\")\n  |> last()\n"
+                      }
+                    }
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "gauge",
+            "version": "13.3.1",
+            "spec": {
+              "options": {
+                "reduceOptions": {
+                  "calcs": [
+                    "lastNotNull"
+                  ],
+                  "values": false
+                },
+                "showThresholdMarkers": true,
+                "showThresholdLabels": true,
+                "textMode": "value"
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "unit": "celsius",
+                  "decimals": 0,
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "value": null,
+                        "color": "green"
+                      },
+                      {
+                        "value": 73,
+                        "color": "orange"
+                      },
+                      {
+                        "value": 83,
+                        "color": "red"
+                      }
+                    ]
+                  },
+                  "color": {
+                    "mode": "thresholds"
+                  },
+                  "min": 0,
+                  "max": 100,
+                  "links": [
+                    {
+                      "title": "Show history",
+                      "url": "/d/zyxel-xs1930?${__url_time_range}&viewPanel=25"
+                    }
+                  ]
+                },
+                "overrides": []
+              }
+            }
+          }
+        }
+      },
+      "panel-22": {
+        "kind": "Panel",
+        "spec": {
+          "id": 22,
+          "title": "Fan",
+          "description": "",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "refId": "A",
+                    "hidden": false,
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "influxdb",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "influxdb"
+                      },
+                      "spec": {
+                        "query": "\nfrom(bucket: \"monitoring\")\n  |> range(start: -5m)\n  |> filter(fn: (r) =>\n    r._measurement == \"zyxel_fan\" and\n    r.source == \"192.168.10.7\"\n  )\n  |> filter(fn: (r) => r._field == \"current\")\n  |> last()\n"
+                      }
+                    }
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "gauge",
+            "version": "13.3.1",
+            "spec": {
+              "options": {
+                "reduceOptions": {
+                  "calcs": [
+                    "lastNotNull"
+                  ],
+                  "values": false
+                },
+                "textMode": "value",
+                "showThresholdMarkers": true,
+                "showThresholdLabels": true
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "unit": "rotrpm",
+                  "decimals": 1,
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "value": null,
+                        "color": "red"
+                      },
+                      {
+                        "value": 500,
+                        "color": "green"
+                      }
+                    ]
+                  },
+                  "color": {
+                    "mode": "thresholds"
+                  },
+                  "links": [
+                    {
+                      "title": "Show history",
+                      "url": "/d/zyxel-xs1930?${__url_time_range}&viewPanel=26"
+                    }
+                  ],
+                  "min": 0,
+                  "max": 5000
+                },
+                "overrides": []
+              }
+            }
+          }
+        }
+      },
+      "panel-23": {
+        "kind": "Panel",
+        "spec": {
+          "id": 23,
+          "title": "Supply 3.3V",
+          "description": "",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "refId": "A",
+                    "hidden": false,
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "influxdb",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "influxdb"
+                      },
+                      "spec": {
+                        "query": "\nfrom(bucket: \"monitoring\")\n  |> range(start: -5m)\n  |> filter(fn: (r) =>\n    r._measurement == \"zyxel_voltage\" and\n    r.source == \"192.168.10.7\"\n  )\n  |> filter(fn: (r) => r._field == \"current\")\n  |> filter(fn: (r) => r.sensor == \"3.3V\")\n  |> last()\n"
+                      }
+                    }
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "gauge",
+            "version": "13.3.1",
+            "spec": {
+              "options": {
+                "reduceOptions": {
+                  "calcs": [
+                    "lastNotNull"
+                  ],
+                  "values": false
+                },
+                "textMode": "value",
+                "showThresholdMarkers": true,
+                "showThresholdLabels": true
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "unit": "mvolt",
+                  "decimals": 1,
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "value": null,
+                        "color": "red"
+                      },
+                      {
+                        "value": 3102,
+                        "color": "green"
+                      }
+                    ]
+                  },
+                  "color": {
+                    "mode": "thresholds"
+                  },
+                  "links": [
+                    {
+                      "title": "Show history",
+                      "url": "/d/zyxel-xs1930?${__url_time_range}&viewPanel=27"
+                    }
+                  ],
+                  "min": 0,
+                  "max": 4000
+                },
+                "overrides": []
+              }
+            }
+          }
+        }
+      },
+      "panel-24": {
+        "kind": "Panel",
+        "spec": {
+          "id": 24,
+          "title": "Supply 12V",
+          "description": "",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "refId": "A",
+                    "hidden": false,
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "influxdb",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "influxdb"
+                      },
+                      "spec": {
+                        "query": "\nfrom(bucket: \"monitoring\")\n  |> range(start: -5m)\n  |> filter(fn: (r) =>\n    r._measurement == \"zyxel_voltage\" and\n    r.source == \"192.168.10.7\"\n  )\n  |> filter(fn: (r) => r._field == \"current\")\n  |> filter(fn: (r) => r.sensor == \"12V\")\n  |> last()\n"
+                      }
+                    }
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "gauge",
+            "version": "13.3.1",
+            "spec": {
+              "options": {
+                "reduceOptions": {
+                  "calcs": [
+                    "lastNotNull"
+                  ],
+                  "values": false
+                },
+                "textMode": "value",
+                "showThresholdMarkers": true,
+                "showThresholdLabels": true
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "unit": "mvolt",
+                  "decimals": 1,
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "value": null,
+                        "color": "red"
+                      },
+                      {
+                        "value": 10800,
+                        "color": "green"
+                      }
+                    ]
+                  },
+                  "color": {
+                    "mode": "thresholds"
+                  },
+                  "links": [
+                    {
+                      "title": "Show history",
+                      "url": "/d/zyxel-xs1930?${__url_time_range}&viewPanel=27"
+                    }
+                  ],
+                  "min": 0,
+                  "max": 15000
+                },
+                "overrides": []
+              }
+            }
+          }
+        }
+      },
+      "panel-25": {
+        "kind": "Panel",
+        "spec": {
+          "id": 25,
+          "title": "Temperatures",
+          "description": "",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "refId": "A",
+                    "hidden": false,
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "influxdb",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "influxdb"
+                      },
+                      "spec": {
+                        "query": "\nfrom(bucket: \"monitoring\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) =>\n    r._measurement == \"zyxel_temperature\" and\n    r.source == \"192.168.10.7\"\n  )\n  |> filter(fn: (r) => r._field == \"current\")\n\n  |> map(fn: (r) => ({\n    r with _field:\n      if exists r.sensor then r.sensor\n      else r._field\n  }))\n  |> group(columns: [\"_field\"])\n  |> aggregateWindow(every: v.windowPeriod, fn: mean)\n"
+                      }
+                    }
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "timeseries",
+            "version": "13.3.1",
+            "spec": {
+              "options": {
+                "legend": {
+                  "showLegend": true,
+                  "placement": "bottom",
+                  "displayMode": "list"
+                },
+                "tooltip": {
+                  "mode": "multi"
+                }
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "unit": "celsius"
+                },
+                "overrides": []
+              }
+            }
+          }
+        }
+      },
+      "panel-26": {
+        "kind": "Panel",
+        "spec": {
+          "id": 26,
+          "title": "Fan speed",
+          "description": "",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "refId": "A",
+                    "hidden": false,
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "influxdb",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "influxdb"
+                      },
+                      "spec": {
+                        "query": "\nfrom(bucket: \"monitoring\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) =>\n    r._measurement == \"zyxel_fan\" and\n    r.source == \"192.168.10.7\"\n  )\n  |> filter(fn: (r) => r._field == \"current\")\n\n  |> map(fn: (r) => ({\n    r with _field:\n      if exists r.sensor then r.sensor\n      else r._field\n  }))\n  |> group(columns: [\"_field\"])\n  |> aggregateWindow(every: v.windowPeriod, fn: mean)\n"
+                      }
+                    }
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "timeseries",
+            "version": "13.3.1",
+            "spec": {
+              "options": {
+                "legend": {
+                  "showLegend": true,
+                  "placement": "bottom",
+                  "displayMode": "list"
+                },
+                "tooltip": {
+                  "mode": "multi"
+                }
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "unit": "rotrpm"
+                },
+                "overrides": []
+              }
+            }
+          }
+        }
+      },
+      "panel-27": {
+        "kind": "Panel",
+        "spec": {
+          "id": 27,
+          "title": "Supply voltages",
+          "description": "",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "refId": "A",
+                    "hidden": false,
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "influxdb",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "influxdb"
+                      },
+                      "spec": {
+                        "query": "\nfrom(bucket: \"monitoring\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) =>\n    r._measurement == \"zyxel_voltage\" and\n    r.source == \"192.168.10.7\"\n  )\n  |> filter(fn: (r) => r._field == \"current\")\n\n  |> map(fn: (r) => ({\n    r with _field:\n      if exists r.sensor then r.sensor\n      else r._field\n  }))\n  |> group(columns: [\"_field\"])\n  |> aggregateWindow(every: v.windowPeriod, fn: mean)\n"
+                      }
+                    }
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "timeseries",
+            "version": "13.3.1",
+            "spec": {
+              "options": {
+                "legend": {
+                  "showLegend": true,
+                  "placement": "bottom",
+                  "displayMode": "list"
+                },
+                "tooltip": {
+                  "mode": "multi"
+                }
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "unit": "mvolt"
+                },
+                "overrides": []
+              }
+            }
+          }
+        }
+      },
+      "panel-28": {
+        "kind": "Panel",
+        "spec": {
+          "id": 28,
+          "title": "CPU / RAM",
+          "description": "",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "refId": "A",
+                    "hidden": false,
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "influxdb",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "influxdb"
+                      },
+                      "spec": {
+                        "query": "\nfrom(bucket: \"monitoring\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) =>\n    r._measurement == \"zyxel_system\" and\n    r.source == \"192.168.10.7\"\n  )\n  |> filter(fn: (r) => r._field == \"cpu_usage\" or r._field == \"memory_usage\")\n\n  |> map(fn: (r) => ({\n    r with _field:\n      if exists r.sensor then r.sensor\n      else r._field\n  }))\n  |> group(columns: [\"_field\"])\n  |> aggregateWindow(every: v.windowPeriod, fn: mean)\n"
+                      }
+                    }
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "timeseries",
+            "version": "13.3.1",
+            "spec": {
+              "options": {
+                "legend": {
+                  "showLegend": true,
+                  "placement": "bottom",
+                  "displayMode": "list"
+                },
+                "tooltip": {
+                  "mode": "multi"
+                }
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "unit": "percent"
+                },
+                "overrides": []
+              }
+            }
+          }
+        }
+      },
+      "panel-29": {
+        "kind": "Panel",
+        "spec": {
+          "id": 29,
+          "title": "Selected port RX",
+          "description": "",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "refId": "A",
+                    "hidden": false,
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "influxdb",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "influxdb"
+                      },
+                      "spec": {
+                        "query": "\nfrom(bucket: \"monitoring\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) =>\n    r._measurement == \"zyxel_interface\" and\n    r.source == \"192.168.10.7\"\n    and r.index == \"${port}\"\n  )\n  |> filter(fn: (r) => r._field == \"ifHCInOctets\")\n\n  |> derivative(unit: 1s, nonNegative: true)\n  |> map(fn: (r) => ({\n    r with\n    _value: float(v: r._value) * 8.0,\n    _field: \"Port \" + r.index\n  }))\n  |> group(columns: [\"_field\"])\n  |> aggregateWindow(every: v.windowPeriod, fn: mean)\n"
+                      }
+                    }
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "timeseries",
+            "version": "13.3.1",
+            "spec": {
+              "options": {
+                "legend": {
+                  "showLegend": true,
+                  "placement": "bottom",
+                  "displayMode": "list"
+                },
+                "tooltip": {
+                  "mode": "multi"
+                }
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "unit": "bps"
+                },
+                "overrides": []
+              }
+            }
+          }
+        }
+      },
+      "panel-30": {
+        "kind": "Panel",
+        "spec": {
+          "id": 30,
+          "title": "Selected port TX",
+          "description": "",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "refId": "A",
+                    "hidden": false,
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "influxdb",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "influxdb"
+                      },
+                      "spec": {
+                        "query": "\nfrom(bucket: \"monitoring\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) =>\n    r._measurement == \"zyxel_interface\" and\n    r.source == \"192.168.10.7\"\n    and r.index == \"${port}\"\n  )\n  |> filter(fn: (r) => r._field == \"ifHCOutOctets\")\n\n  |> derivative(unit: 1s, nonNegative: true)\n  |> map(fn: (r) => ({\n    r with\n    _value: float(v: r._value) * 8.0,\n    _field: \"Port \" + r.index\n  }))\n  |> group(columns: [\"_field\"])\n  |> aggregateWindow(every: v.windowPeriod, fn: mean)\n"
+                      }
+                    }
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "timeseries",
+            "version": "13.3.1",
+            "spec": {
+              "options": {
+                "legend": {
+                  "showLegend": true,
+                  "placement": "bottom",
+                  "displayMode": "list"
+                },
+                "tooltip": {
+                  "mode": "multi"
+                }
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "unit": "bps"
+                },
+                "overrides": []
+              }
+            }
+          }
+        }
+      },
+      "panel-31": {
+        "kind": "Panel",
+        "spec": {
+          "id": 31,
+          "title": "Errors",
+          "description": "",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "refId": "A",
+                    "hidden": false,
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "influxdb",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "influxdb"
+                      },
+                      "spec": {
+                        "query": "\nfrom(bucket: \"monitoring\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) =>\n    r._measurement == \"zyxel_interface\" and\n    r.source == \"192.168.10.7\"\n    and r.index == \"${port}\"\n  )\n  |> filter(fn: (r) => r._field == \"ifInErrors\" or r._field == \"ifOutErrors\")\n\n  |> difference(nonNegative: true)\n  |> map(fn: (r) => ({\n    r with\n    _field: \"Port \" + r.index + \" \" + r._field\n  }))\n  |> group(columns: [\"_field\"])\n  |> aggregateWindow(every: v.windowPeriod, fn: sum)\n"
+                      }
+                    }
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "timeseries",
+            "version": "13.3.1",
+            "spec": {
+              "options": {
+                "legend": {
+                  "showLegend": true,
+                  "placement": "bottom",
+                  "displayMode": "list"
+                },
+                "tooltip": {
+                  "mode": "multi"
+                }
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "min": 0
+                },
+                "overrides": []
+              }
+            }
+          }
+        }
+      },
+      "panel-32": {
+        "kind": "Panel",
+        "spec": {
+          "id": 32,
+          "title": "Discards",
+          "description": "",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "refId": "A",
+                    "hidden": false,
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "influxdb",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "influxdb"
+                      },
+                      "spec": {
+                        "query": "\nfrom(bucket: \"monitoring\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) =>\n    r._measurement == \"zyxel_interface\" and\n    r.source == \"192.168.10.7\"\n    and r.index == \"${port}\"\n  )\n  |> filter(fn: (r) => r._field == \"ifInDiscards\" or r._field == \"ifOutDiscards\")\n\n  |> difference(nonNegative: true)\n  |> map(fn: (r) => ({\n    r with\n    _field: \"Port \" + r.index + \" \" + r._field\n  }))\n  |> group(columns: [\"_field\"])\n  |> aggregateWindow(every: v.windowPeriod, fn: sum)\n"
+                      }
+                    }
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "timeseries",
+            "version": "13.3.1",
+            "spec": {
+              "options": {
+                "legend": {
+                  "showLegend": true,
+                  "placement": "bottom",
+                  "displayMode": "list"
+                },
+                "tooltip": {
+                  "mode": "multi"
+                }
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "min": 0
+                },
+                "overrides": []
+              }
+            }
+          }
+        }
+      },
+      "panel-33": {
+        "kind": "Panel",
+        "spec": {
+          "id": 33,
+          "title": "Link speed history",
+          "description": "",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "refId": "A",
+                    "hidden": false,
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "influxdb",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "influxdb"
+                      },
+                      "spec": {
+                        "query": "\nfrom(bucket: \"monitoring\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) =>\n    r._measurement == \"zyxel_interface\" and\n    r.source == \"192.168.10.7\"\n    and r.index == \"${port}\"\n  )\n  |> filter(fn: (r) => r._field == \"ifHighSpeed\" or r._field == \"ifOperStatus\")\n\n  |> pivot(\n    rowKey: [\"_time\"],\n    columnKey: [\"_field\"],\n    valueColumn: \"_value\"\n  )\n  |> filter(fn: (r) =>\n    exists r.ifHighSpeed and exists r.ifOperStatus\n  )\n  |> map(fn: (r) => ({\n    r with\n    _value:\n      if r.ifOperStatus == 1 then int(v: r.ifHighSpeed)\n      else if r.ifOperStatus == 2 then 0\n      else -1,\n    _field: if exists r.ifAlias and r.ifAlias != \"\"\n            then r.ifAlias\n            else r.ifDescr\n  }))\n\n  |> map(fn: (r) => ({\n    r with _field: \"Port \" + (if int(v: r.index) < 10 then \"0\" + r.index else r.index)\n  }))\n  |> group(columns: [\"_field\"])\n  |> aggregateWindow(every: 10s, fn: last, createEmpty: false)\n\n  |> keep(columns: [\"_time\", \"_field\", \"_value\"])\n  |> group(columns: [\"_field\"])\n"
+                      }
+                    }
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "state-timeline",
+            "version": "13.3.1",
+            "spec": {
+              "options": {
+                "mergeValues": true,
+                "showValue": "never",
+                "rowHeight": 0.7,
+                "legend": {
+                  "showLegend": false
+                }
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "mappings": [
+                    {
+                      "type": "value",
+                      "options": {
+                        "-1": {
+                          "text": "Fault",
+                          "color": "red"
+                        },
+                        "0": {
+                          "text": "Down",
+                          "color": "gray"
+                        },
+                        "10": {
+                          "text": "10 Mbps",
+                          "color": "orange"
+                        },
+                        "100": {
+                          "text": "100 Mbps",
+                          "color": "orange"
+                        },
+                        "1000": {
+                          "text": "1 Gbps",
+                          "color": "green"
+                        },
+                        "2500": {
+                          "text": "2.5 Gbps",
+                          "color": "purple"
+                        },
+                        "5000": {
+                          "text": "5 Gbps",
+                          "color": "purple"
+                        },
+                        "10000": {
+                          "text": "10 Gbps",
+                          "color": "blue"
+                        }
+                      }
+                    }
+                  ],
+                  "color": {
+                    "mode": "thresholds"
+                  },
+                  "noValue": "No telemetry",
+                  "custom": {
+                    "fillOpacity": 75,
+                    "lineWidth": 0,
+                    "spanNulls": false
+                  },
+                  "displayName": "${__field.labels._field}",
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "value": null,
+                        "color": "red"
+                      },
+                      {
+                        "value": 0,
+                        "color": "gray"
+                      },
+                      {
+                        "value": 10,
+                        "color": "orange"
+                      },
+                      {
+                        "value": 1000,
+                        "color": "green"
+                      },
+                      {
+                        "value": 2500,
+                        "color": "purple"
+                      },
+                      {
+                        "value": 10000,
+                        "color": "blue"
+                      }
+                    ]
+                  }
+                },
+                "overrides": []
+              }
+            }
+          }
+        }
+      },
+      "panel-34": {
+        "kind": "Panel",
+        "spec": {
+          "id": 34,
+          "title": "Model",
+          "description": "",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "refId": "A",
+                    "hidden": false,
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "influxdb",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "influxdb"
+                      },
+                      "spec": {
+                        "query": "\nfrom(bucket: \"monitoring\")\n  |> range(start: -15m)\n  |> filter(fn: (r) =>\n    r._measurement == \"zyxel_inventory\" and\n    r.source == \"192.168.10.7\"\n  )\n  |> filter(fn: (r) => r._field == \"model\")\n  |> last()\n"
                       }
                     }
                   }
@@ -282,13 +3157,392 @@
               "options": {
                 "colorMode": "none",
                 "graphMode": "none",
-                "textMode": "auto",
+                "justifyMode": "center",
+                "textMode": "value",
+                "orientation": "auto",
+                "text": {
+                  "titleSize": 12,
+                  "valueSize": 22
+                },
                 "reduceOptions": {
                   "calcs": [
                     "lastNotNull"
                   ],
                   "values": false
                 }
+              },
+              "fieldConfig": {
+                "defaults": {},
+                "overrides": []
+              }
+            }
+          }
+        }
+      },
+      "panel-35": {
+        "kind": "Panel",
+        "spec": {
+          "id": 35,
+          "title": "Firmware",
+          "description": "",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "refId": "A",
+                    "hidden": false,
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "influxdb",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "influxdb"
+                      },
+                      "spec": {
+                        "query": "\nfrom(bucket: \"monitoring\")\n  |> range(start: -15m)\n  |> filter(fn: (r) =>\n    r._measurement == \"zyxel_inventory\" and\n    r.source == \"192.168.10.7\"\n  )\n  |> filter(fn: (r) => r._field == \"firmware\")\n  |> last()\n"
+                      }
+                    }
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "stat",
+            "version": "13.3.1",
+            "spec": {
+              "options": {
+                "colorMode": "none",
+                "graphMode": "none",
+                "justifyMode": "center",
+                "textMode": "value",
+                "orientation": "auto",
+                "text": {
+                  "titleSize": 12,
+                  "valueSize": 22
+                },
+                "reduceOptions": {
+                  "calcs": [
+                    "lastNotNull"
+                  ],
+                  "values": false
+                }
+              },
+              "fieldConfig": {
+                "defaults": {},
+                "overrides": []
+              }
+            }
+          }
+        }
+      },
+      "panel-36": {
+        "kind": "Panel",
+        "spec": {
+          "id": 36,
+          "title": "Serial number",
+          "description": "",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "refId": "A",
+                    "hidden": false,
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "influxdb",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "influxdb"
+                      },
+                      "spec": {
+                        "query": "\nfrom(bucket: \"monitoring\")\n  |> range(start: -15m)\n  |> filter(fn: (r) =>\n    r._measurement == \"zyxel_inventory\" and\n    r.source == \"192.168.10.7\"\n  )\n  |> filter(fn: (r) => r._field == \"serial_number\")\n  |> last()\n"
+                      }
+                    }
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "stat",
+            "version": "13.3.1",
+            "spec": {
+              "options": {
+                "colorMode": "none",
+                "graphMode": "none",
+                "justifyMode": "center",
+                "textMode": "value",
+                "orientation": "auto",
+                "text": {
+                  "titleSize": 12,
+                  "valueSize": 22
+                },
+                "reduceOptions": {
+                  "calcs": [
+                    "lastNotNull"
+                  ],
+                  "values": false
+                }
+              },
+              "fieldConfig": {
+                "defaults": {},
+                "overrides": []
+              }
+            }
+          }
+        }
+      },
+      "panel-37": {
+        "kind": "Panel",
+        "spec": {
+          "id": 37,
+          "title": "Hardware major",
+          "description": "",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "refId": "A",
+                    "hidden": false,
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "influxdb",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "influxdb"
+                      },
+                      "spec": {
+                        "query": "\nfrom(bucket: \"monitoring\")\n  |> range(start: -15m)\n  |> filter(fn: (r) =>\n    r._measurement == \"zyxel_inventory\" and\n    r.source == \"192.168.10.7\"\n  )\n  |> filter(fn: (r) => r._field == \"hardware_major\")\n  |> last()\n"
+                      }
+                    }
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "stat",
+            "version": "13.3.1",
+            "spec": {
+              "options": {
+                "colorMode": "none",
+                "graphMode": "none",
+                "justifyMode": "center",
+                "textMode": "value",
+                "orientation": "auto",
+                "text": {
+                  "titleSize": 12,
+                  "valueSize": 22
+                },
+                "reduceOptions": {
+                  "calcs": [
+                    "lastNotNull"
+                  ],
+                  "values": false
+                }
+              },
+              "fieldConfig": {
+                "defaults": {},
+                "overrides": []
+              }
+            }
+          }
+        }
+      },
+      "panel-38": {
+        "kind": "Panel",
+        "spec": {
+          "id": 38,
+          "title": "Hardware minor",
+          "description": "",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "refId": "A",
+                    "hidden": false,
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "influxdb",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "influxdb"
+                      },
+                      "spec": {
+                        "query": "\nfrom(bucket: \"monitoring\")\n  |> range(start: -15m)\n  |> filter(fn: (r) =>\n    r._measurement == \"zyxel_inventory\" and\n    r.source == \"192.168.10.7\"\n  )\n  |> filter(fn: (r) => r._field == \"hardware_minor\")\n  |> last()\n"
+                      }
+                    }
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "stat",
+            "version": "13.3.1",
+            "spec": {
+              "options": {
+                "colorMode": "none",
+                "graphMode": "none",
+                "justifyMode": "center",
+                "textMode": "value",
+                "orientation": "auto",
+                "text": {
+                  "titleSize": 12,
+                  "valueSize": 22
+                },
+                "reduceOptions": {
+                  "calcs": [
+                    "lastNotNull"
+                  ],
+                  "values": false
+                }
+              },
+              "fieldConfig": {
+                "defaults": {},
+                "overrides": []
+              }
+            }
+          }
+        }
+      },
+      "panel-39": {
+        "kind": "Panel",
+        "spec": {
+          "id": 39,
+          "title": "Uptime",
+          "description": "",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "refId": "A",
+                    "hidden": false,
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "influxdb",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "influxdb"
+                      },
+                      "spec": {
+                        "query": "\nfrom(bucket: \"monitoring\")\n  |> range(start: -5m)\n  |> filter(fn: (r) =>\n    r._measurement == \"zyxel_system\" and\n    r.source == \"192.168.10.7\"\n  )\n  |> filter(fn: (r) => r._field == \"uptime\")\n\n  |> last()\n  |> map(fn: (r) => ({\n    r with _value: float(v: r._value) / 100.0\n  }))\n"
+                      }
+                    }
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "stat",
+            "version": "13.3.1",
+            "spec": {
+              "options": {
+                "colorMode": "none",
+                "graphMode": "none",
+                "justifyMode": "center",
+                "textMode": "value",
+                "orientation": "auto",
+                "text": {
+                  "titleSize": 12,
+                  "valueSize": 22
+                },
+                "reduceOptions": {
+                  "calcs": [
+                    "lastNotNull"
+                  ],
+                  "values": false
+                }
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "unit": "s"
+                },
+                "overrides": []
+              }
+            }
+          }
+        }
+      },
+      "panel-40": {
+        "kind": "Panel",
+        "spec": {
+          "id": 40,
+          "title": "LLDP neighbours",
+          "description": "",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "refId": "A",
+                    "hidden": false,
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "influxdb",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "influxdb"
+                      },
+                      "spec": {
+                        "query": "import \"strings\"\n\nfrom(bucket: \"monitoring\")\n  |> range(start: -15m)\n  |> filter(fn: (r) =>\n    r._measurement == \"zyxel_lldp\" and\n    r.source == \"192.168.10.7\"\n  )\n\n  |> last()\n  |> pivot(\n    rowKey: [\"index\"],\n    columnKey: [\"_field\"],\n    valueColumn: \"_value\"\n  )\n  |> map(fn: (r) => ({\n    Port: int(v: strings.split(v: r.index, t: \".\")[1]),\n    Neighbour:\n      if exists r.remote_system_name and\n         r.remote_system_name != \"\"\n      then r.remote_system_name\n      else if exists r.remote_port_id\n      then r.remote_port_id\n      else \"\",\n    Remote_port:\n      if exists r.remote_port_id then r.remote_port_id else \"\"\n  }))\n  |> group()\n  |> sort(columns: [\"Port\"])\n"
+                      }
+                    }
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "table",
+            "version": "13.3.1",
+            "spec": {
+              "options": {
+                "showHeader": true,
+                "cellHeight": "sm"
               },
               "fieldConfig": {
                 "defaults": {},
@@ -308,45 +3562,562 @@
             "spec": {
               "title": "Overview",
               "layout": {
-                "kind": "AutoGridLayout",
+                "kind": "RowsLayout",
                 "spec": {
-                  "maxColumnCount": 4,
-                  "columnWidthMode": "standard",
-                  "rowHeightMode": "short",
-                  "items": [
+                  "rows": [
                     {
-                      "kind": "AutoGridLayoutItem",
+                      "kind": "RowsLayoutRow",
                       "spec": {
-                        "element": {
-                          "kind": "ElementReference",
-                          "name": "panel-1"
+                        "title": "Switch ports",
+                        "collapse": false,
+                        "layout": {
+                          "kind": "AutoGridLayout",
+                          "spec": {
+                            "maxColumnCount": 5,
+                            "columnWidthMode": "narrow",
+                            "rowHeightMode": "short",
+                            "items": [
+                              {
+                                "kind": "AutoGridLayoutItem",
+                                "spec": {
+                                  "element": {
+                                    "kind": "ElementReference",
+                                    "name": "panel-1"
+                                  }
+                                }
+                              },
+                              {
+                                "kind": "AutoGridLayoutItem",
+                                "spec": {
+                                  "element": {
+                                    "kind": "ElementReference",
+                                    "name": "panel-2"
+                                  }
+                                }
+                              },
+                              {
+                                "kind": "AutoGridLayoutItem",
+                                "spec": {
+                                  "element": {
+                                    "kind": "ElementReference",
+                                    "name": "panel-3"
+                                  }
+                                }
+                              },
+                              {
+                                "kind": "AutoGridLayoutItem",
+                                "spec": {
+                                  "element": {
+                                    "kind": "ElementReference",
+                                    "name": "panel-4"
+                                  }
+                                }
+                              },
+                              {
+                                "kind": "AutoGridLayoutItem",
+                                "spec": {
+                                  "element": {
+                                    "kind": "ElementReference",
+                                    "name": "panel-5"
+                                  }
+                                }
+                              },
+                              {
+                                "kind": "AutoGridLayoutItem",
+                                "spec": {
+                                  "element": {
+                                    "kind": "ElementReference",
+                                    "name": "panel-6"
+                                  }
+                                }
+                              },
+                              {
+                                "kind": "AutoGridLayoutItem",
+                                "spec": {
+                                  "element": {
+                                    "kind": "ElementReference",
+                                    "name": "panel-7"
+                                  }
+                                }
+                              },
+                              {
+                                "kind": "AutoGridLayoutItem",
+                                "spec": {
+                                  "element": {
+                                    "kind": "ElementReference",
+                                    "name": "panel-8"
+                                  }
+                                }
+                              },
+                              {
+                                "kind": "AutoGridLayoutItem",
+                                "spec": {
+                                  "element": {
+                                    "kind": "ElementReference",
+                                    "name": "panel-9"
+                                  }
+                                }
+                              },
+                              {
+                                "kind": "AutoGridLayoutItem",
+                                "spec": {
+                                  "element": {
+                                    "kind": "ElementReference",
+                                    "name": "panel-10"
+                                  }
+                                }
+                              }
+                            ]
+                          }
                         }
                       }
                     },
                     {
-                      "kind": "AutoGridLayoutItem",
+                      "kind": "RowsLayoutRow",
                       "spec": {
-                        "element": {
-                          "kind": "ElementReference",
-                          "name": "panel-2"
+                        "title": "Port statistics",
+                        "collapse": false,
+                        "layout": {
+                          "kind": "AutoGridLayout",
+                          "spec": {
+                            "maxColumnCount": 1,
+                            "columnWidthMode": "standard",
+                            "rowHeightMode": "tall",
+                            "items": [
+                              {
+                                "kind": "AutoGridLayoutItem",
+                                "spec": {
+                                  "element": {
+                                    "kind": "ElementReference",
+                                    "name": "panel-11"
+                                  }
+                                }
+                              }
+                            ]
+                          }
                         }
                       }
                     },
                     {
-                      "kind": "AutoGridLayoutItem",
+                      "kind": "RowsLayoutRow",
                       "spec": {
-                        "element": {
-                          "kind": "ElementReference",
-                          "name": "panel-3"
+                        "title": "System health",
+                        "collapse": false,
+                        "layout": {
+                          "kind": "AutoGridLayout",
+                          "spec": {
+                            "maxColumnCount": 8,
+                            "columnWidthMode": "narrow",
+                            "rowHeightMode": "short",
+                            "items": [
+                              {
+                                "kind": "AutoGridLayoutItem",
+                                "spec": {
+                                  "element": {
+                                    "kind": "ElementReference",
+                                    "name": "panel-17"
+                                  }
+                                }
+                              },
+                              {
+                                "kind": "AutoGridLayoutItem",
+                                "spec": {
+                                  "element": {
+                                    "kind": "ElementReference",
+                                    "name": "panel-18"
+                                  }
+                                }
+                              },
+                              {
+                                "kind": "AutoGridLayoutItem",
+                                "spec": {
+                                  "element": {
+                                    "kind": "ElementReference",
+                                    "name": "panel-19"
+                                  }
+                                }
+                              },
+                              {
+                                "kind": "AutoGridLayoutItem",
+                                "spec": {
+                                  "element": {
+                                    "kind": "ElementReference",
+                                    "name": "panel-20"
+                                  }
+                                }
+                              },
+                              {
+                                "kind": "AutoGridLayoutItem",
+                                "spec": {
+                                  "element": {
+                                    "kind": "ElementReference",
+                                    "name": "panel-21"
+                                  }
+                                }
+                              },
+                              {
+                                "kind": "AutoGridLayoutItem",
+                                "spec": {
+                                  "element": {
+                                    "kind": "ElementReference",
+                                    "name": "panel-22"
+                                  }
+                                }
+                              },
+                              {
+                                "kind": "AutoGridLayoutItem",
+                                "spec": {
+                                  "element": {
+                                    "kind": "ElementReference",
+                                    "name": "panel-23"
+                                  }
+                                }
+                              },
+                              {
+                                "kind": "AutoGridLayoutItem",
+                                "spec": {
+                                  "element": {
+                                    "kind": "ElementReference",
+                                    "name": "panel-24"
+                                  }
+                                }
+                              }
+                            ]
+                          }
                         }
                       }
                     },
                     {
-                      "kind": "AutoGridLayoutItem",
+                      "kind": "RowsLayoutRow",
                       "spec": {
-                        "element": {
-                          "kind": "ElementReference",
-                          "name": "panel-4"
+                        "title": "Connection history",
+                        "collapse": false,
+                        "layout": {
+                          "kind": "AutoGridLayout",
+                          "spec": {
+                            "maxColumnCount": 1,
+                            "columnWidthMode": "standard",
+                            "rowHeightMode": "tall",
+                            "items": [
+                              {
+                                "kind": "AutoGridLayoutItem",
+                                "spec": {
+                                  "element": {
+                                    "kind": "ElementReference",
+                                    "name": "panel-12"
+                                  }
+                                }
+                              }
+                            ]
+                          }
+                        }
+                      }
+                    },
+                    {
+                      "kind": "RowsLayoutRow",
+                      "spec": {
+                        "title": "Network history",
+                        "collapse": false,
+                        "layout": {
+                          "kind": "AutoGridLayout",
+                          "spec": {
+                            "maxColumnCount": 2,
+                            "columnWidthMode": "standard",
+                            "rowHeightMode": "standard",
+                            "items": [
+                              {
+                                "kind": "AutoGridLayoutItem",
+                                "spec": {
+                                  "element": {
+                                    "kind": "ElementReference",
+                                    "name": "panel-13"
+                                  }
+                                }
+                              },
+                              {
+                                "kind": "AutoGridLayoutItem",
+                                "spec": {
+                                  "element": {
+                                    "kind": "ElementReference",
+                                    "name": "panel-14"
+                                  }
+                                }
+                              },
+                              {
+                                "kind": "AutoGridLayoutItem",
+                                "spec": {
+                                  "element": {
+                                    "kind": "ElementReference",
+                                    "name": "panel-15"
+                                  }
+                                }
+                              },
+                              {
+                                "kind": "AutoGridLayoutItem",
+                                "spec": {
+                                  "element": {
+                                    "kind": "ElementReference",
+                                    "name": "panel-16"
+                                  }
+                                }
+                              }
+                            ]
+                          }
+                        }
+                      }
+                    },
+                    {
+                      "kind": "RowsLayoutRow",
+                      "spec": {
+                        "title": "Hardware history",
+                        "collapse": false,
+                        "layout": {
+                          "kind": "AutoGridLayout",
+                          "spec": {
+                            "maxColumnCount": 2,
+                            "columnWidthMode": "standard",
+                            "rowHeightMode": "standard",
+                            "items": [
+                              {
+                                "kind": "AutoGridLayoutItem",
+                                "spec": {
+                                  "element": {
+                                    "kind": "ElementReference",
+                                    "name": "panel-25"
+                                  }
+                                }
+                              },
+                              {
+                                "kind": "AutoGridLayoutItem",
+                                "spec": {
+                                  "element": {
+                                    "kind": "ElementReference",
+                                    "name": "panel-26"
+                                  }
+                                }
+                              },
+                              {
+                                "kind": "AutoGridLayoutItem",
+                                "spec": {
+                                  "element": {
+                                    "kind": "ElementReference",
+                                    "name": "panel-27"
+                                  }
+                                }
+                              },
+                              {
+                                "kind": "AutoGridLayoutItem",
+                                "spec": {
+                                  "element": {
+                                    "kind": "ElementReference",
+                                    "name": "panel-28"
+                                  }
+                                }
+                              }
+                            ]
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          {
+            "kind": "TabsLayoutTab",
+            "spec": {
+              "title": "Port Details",
+              "layout": {
+                "kind": "RowsLayout",
+                "spec": {
+                  "rows": [
+                    {
+                      "kind": "RowsLayoutRow",
+                      "spec": {
+                        "title": "Selected port link history",
+                        "collapse": false,
+                        "layout": {
+                          "kind": "AutoGridLayout",
+                          "spec": {
+                            "maxColumnCount": 1,
+                            "columnWidthMode": "standard",
+                            "rowHeightMode": "short",
+                            "items": [
+                              {
+                                "kind": "AutoGridLayoutItem",
+                                "spec": {
+                                  "element": {
+                                    "kind": "ElementReference",
+                                    "name": "panel-33"
+                                  }
+                                }
+                              }
+                            ]
+                          }
+                        }
+                      }
+                    },
+                    {
+                      "kind": "RowsLayoutRow",
+                      "spec": {
+                        "title": "Traffic and reliability",
+                        "collapse": false,
+                        "layout": {
+                          "kind": "AutoGridLayout",
+                          "spec": {
+                            "maxColumnCount": 2,
+                            "columnWidthMode": "standard",
+                            "rowHeightMode": "standard",
+                            "items": [
+                              {
+                                "kind": "AutoGridLayoutItem",
+                                "spec": {
+                                  "element": {
+                                    "kind": "ElementReference",
+                                    "name": "panel-29"
+                                  }
+                                }
+                              },
+                              {
+                                "kind": "AutoGridLayoutItem",
+                                "spec": {
+                                  "element": {
+                                    "kind": "ElementReference",
+                                    "name": "panel-30"
+                                  }
+                                }
+                              },
+                              {
+                                "kind": "AutoGridLayoutItem",
+                                "spec": {
+                                  "element": {
+                                    "kind": "ElementReference",
+                                    "name": "panel-31"
+                                  }
+                                }
+                              },
+                              {
+                                "kind": "AutoGridLayoutItem",
+                                "spec": {
+                                  "element": {
+                                    "kind": "ElementReference",
+                                    "name": "panel-32"
+                                  }
+                                }
+                              }
+                            ]
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          {
+            "kind": "TabsLayoutTab",
+            "spec": {
+              "title": "Device Information",
+              "layout": {
+                "kind": "RowsLayout",
+                "spec": {
+                  "rows": [
+                    {
+                      "kind": "RowsLayoutRow",
+                      "spec": {
+                        "title": "Inventory",
+                        "collapse": false,
+                        "layout": {
+                          "kind": "AutoGridLayout",
+                          "spec": {
+                            "maxColumnCount": 3,
+                            "columnWidthMode": "standard",
+                            "rowHeightMode": "short",
+                            "items": [
+                              {
+                                "kind": "AutoGridLayoutItem",
+                                "spec": {
+                                  "element": {
+                                    "kind": "ElementReference",
+                                    "name": "panel-34"
+                                  }
+                                }
+                              },
+                              {
+                                "kind": "AutoGridLayoutItem",
+                                "spec": {
+                                  "element": {
+                                    "kind": "ElementReference",
+                                    "name": "panel-35"
+                                  }
+                                }
+                              },
+                              {
+                                "kind": "AutoGridLayoutItem",
+                                "spec": {
+                                  "element": {
+                                    "kind": "ElementReference",
+                                    "name": "panel-36"
+                                  }
+                                }
+                              },
+                              {
+                                "kind": "AutoGridLayoutItem",
+                                "spec": {
+                                  "element": {
+                                    "kind": "ElementReference",
+                                    "name": "panel-37"
+                                  }
+                                }
+                              },
+                              {
+                                "kind": "AutoGridLayoutItem",
+                                "spec": {
+                                  "element": {
+                                    "kind": "ElementReference",
+                                    "name": "panel-38"
+                                  }
+                                }
+                              },
+                              {
+                                "kind": "AutoGridLayoutItem",
+                                "spec": {
+                                  "element": {
+                                    "kind": "ElementReference",
+                                    "name": "panel-39"
+                                  }
+                                }
+                              }
+                            ]
+                          }
+                        }
+                      }
+                    },
+                    {
+                      "kind": "RowsLayoutRow",
+                      "spec": {
+                        "title": "Neighbours",
+                        "collapse": false,
+                        "layout": {
+                          "kind": "AutoGridLayout",
+                          "spec": {
+                            "maxColumnCount": 1,
+                            "columnWidthMode": "standard",
+                            "rowHeightMode": "standard",
+                            "items": [
+                              {
+                                "kind": "AutoGridLayoutItem",
+                                "spec": {
+                                  "element": {
+                                    "kind": "ElementReference",
+                                    "name": "panel-40"
+                                  }
+                                }
+                              }
+                            ]
+                          }
                         }
                       }
                     }
@@ -365,7 +4136,26 @@
       "autoRefresh": "1m"
     },
     "annotations": [],
-    "variables": [],
+    "variables": [
+      {
+        "kind": "CustomVariable",
+        "spec": {
+          "name": "port",
+          "label": "Detail port",
+          "query": "1,2,3,4,5,6,7,8,9,10",
+          "current": {
+            "text": "7",
+            "value": "7"
+          },
+          "options": [],
+          "multi": false,
+          "includeAll": false,
+          "hide": "dontHide",
+          "skipUrlSync": false,
+          "allowCustomValue": false
+        }
+      }
+    ],
     "links": []
   }
 }
